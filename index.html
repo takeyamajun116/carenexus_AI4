@@ -129,17 +129,26 @@ white-space: nowrap; transition:0.2s; }
 .timeline-card.active { background: #eff6ff; border-color: var(--primary); border-left: 4px solid var(--primary); }
 
 .treatment-section { margin-bottom: 12px; }
-.treatment-category { font-size: 11px; font-weight: bold; color: var(--primary); margin-bottom: 6px; background: #eff6ff; display: inline-block; padding: 2px 8px; border-radius: 4px; }
-.treatment-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
-.treatment-item { display: flex; align-items: center; gap: 6px; font-size: 12px; background: #fff; padding: 6px 10px; border-radius: 20px; border: 1px solid #e5e7eb; cursor: pointer; transition: 0.1s; }
+.treatment-category-label { font-size: 12px; font-weight: bold; color: #374151; margin-bottom: 6px; display:block; background:#f3f4f6; padding:4px 8px; border-radius:4px; }
+.treatment-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; margin-bottom:12px; }
+.treatment-item { display: flex; align-items: center; gap: 6px; font-size: 11px; background: #fff; padding: 6px 8px; border-radius: 4px; border: 1px solid #e5e7eb; cursor: pointer; transition: 0.1s; line-height:1.2; }
 .treatment-item:hover { border-color: var(--primary); }
-.treatment-item input { width: 14px; height: 14px; margin: 0; accent-color: var(--primary); }
+.treatment-item input { width: 13px; height: 13px; margin: 0; accent-color: var(--primary); flex-shrink:0; }
 
 /* History & Billing */
-.history-scroll-area { max-height: 300px; overflow-y: auto; padding-right: 8px; border: 1px solid #eee; border-radius: 8px; padding: 12px; background: #fdfdfd; }
+.history-scroll-area { max-height: 350px; overflow-y: auto; padding-right: 8px; border: 1px solid #eee; border-radius: 8px; padding: 12px; background: #fdfdfd; }
 .history-item { border-left: 3px solid #ddd; padding-left: 14px; margin-bottom: 16px; position: relative; }
 .history-item::before { content: ''; position: absolute; left: -6.5px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: #999; border: 2px solid #fff; }
-.summary-box { background: #f0f9ff; border: 1px solid #bae6fd; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; line-height: 1.6; }
+
+.summary-box-structured { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+.sb-row { padding: 10px 12px; border-bottom: 1px solid #e5e7eb; font-size: 13px; line-height: 1.5; background:#fff; }
+.sb-row:last-child { border-bottom: none; }
+.sb-alert { background: #fef2f2; border-left: 4px solid #ef4444; color: #b91c1c; }
+.sb-ng { background: #fff1f2; border-left: 4px solid #be123c; color: #9f1239; }
+.sb-todo { background: #fffbeb; border-left: 4px solid #f59e0b; color: #92400e; }
+.sb-change { background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e40af; }
+.sb-family { background: #fdf2f8; border-left: 4px solid #ec4899; color: #be185d; }
+.sb-label { font-weight: bold; margin-right: 6px; display:inline-block; min-width:80px; }
 
 .billing-rec { display: flex; flex-direction: column; gap: 6px; padding: 12px; background: #fff; border: 1px solid #bfdbfe; border-radius: 8px; margin-bottom: 8px; text-align: left; }
 .billing-row-main { display: flex; align-items: center; gap: 10px; }
@@ -178,7 +187,7 @@ white-space: nowrap; transition:0.2s; }
 .sales-val { font-size: 20px; font-weight: 800; color: var(--text-main); }
 .sales-label { font-size: 11px; color: var(--text-sub); }
 
-/* Admin Staff Timeline (24H Enhanced) */
+/* Admin Staff Timeline (24H Realistic) */
 .timeline-scroll { overflow-x: auto; white-space: nowrap; padding-bottom: 10px; }
 .timeline-table { min-width: 1500px; width: 100%; border-collapse: collapse; table-layout: fixed; }
 .timeline-table th { background: #f9fafb; font-size: 11px; padding: 4px; border-right: 1px solid #eee; text-align: center; color: #666; width: 40px; }
@@ -454,7 +463,7 @@ white-space: nowrap; transition:0.2s; }
                     <span style="font-weight:bold; font-size:14px; white-space:nowrap;">利用者:</span>
                     <select id="patientSelector" style="min-width:180px;" onchange="switchPatient()">
                         <option value="1">田中 太郎 様</option>
-                        <option value="2" selected>佐藤 花子 様</option>
+                        <option value="2">佐藤 花子 様</option>
                         <option value="3">鈴木 一郎 様</option>
                     </select>
                     <button class="btn btn-sm btn-ghost" onclick="toggleFaceSheet()"><i class="fa-solid fa-id-card"></i> 詳細</button>
@@ -531,15 +540,8 @@ white-space: nowrap; transition:0.2s; }
                     </div>
                 </div>
 
-                <div class="treatment-section">
-                    <div class="treatment-category">ケア・処置</div>
-                    <div class="treatment-grid">
-                        <label class="treatment-item"><input type="checkbox" onchange="toggleTreatment('清拭')"> 清拭</label>
-                        <label class="treatment-item"><input type="checkbox" onchange="toggleTreatment('褥瘡処置')"> 褥瘡処置</label>
-                        <label class="treatment-item"><input type="checkbox" onchange="toggleTreatment('吸引')"> 吸引</label>
-                        <label class="treatment-item"><input type="checkbox" onchange="toggleTreatment('点滴')"> 点滴</label>
+                <div class="treatment-section" id="treatmentFullList">
                     </div>
-                </div>
                 
                 <textarea id="aiInputMemo" rows="3" placeholder="「褥瘡は良化傾向。ガーゼ交換実施。」のように入力..." style="margin-top:10px;"></textarea>
                 <div class="flex-row" style="margin-bottom:10px;">
@@ -587,8 +589,9 @@ white-space: nowrap; transition:0.2s; }
             <div class="panel-title"><i class="fa-solid fa-clock-rotate-left"></i> 過去記録 / AIサマリー</div>
             <div class="grid-2">
                 <div>
-                    <h5 style="margin:0 0 8px 0; font-size:13px; color:var(--text-sub);">AI重要情報サマリー (要約)</h5>
-                    <div class="summary-box" id="aiSummaryText">読み込み中...</div>
+                    <h5 style="margin:0 0 8px 0; font-size:13px; color:var(--text-sub);">AI重要情報サマリー</h5>
+                    <div id="aiSummaryContainer">
+                        </div>
                     <button class="btn btn-primary" onclick="speakSummary()"><i class="fa-solid fa-volume-high"></i> 要約を読み上げ</button>
                 </div>
                 <div>
@@ -703,15 +706,6 @@ white-space: nowrap; transition:0.2s; }
         <div class="panel">
             <div class="panel-title">スタッフ動態管理マップ</div>
             <div class="map-container" id="adminMap"></div>
-            
-            <div style="margin-top:12px; border-top:1px solid #eee; padding-top:12px;">
-                <div class="flex-between">
-                    <span style="font-weight:bold; font-size:13px;">(A-3) 訪問ルート最適化シミュレーション</span>
-                    <button class="btn btn-sm btn-primary" onclick="runOptimization()">最適化実行</button>
-                </div>
-                <div id="optResult" style="display:none; font-size:12px; color:#15803d; margin-top:8px; background:#dcfce7; padding:10px; border-radius:4px; line-height:1.6;">
-                    </div>
-            </div>
         </div>
 
         <div class="panel">
@@ -856,8 +850,32 @@ const patientDatabase = {
     1: { 
         name: "田中 太郎",
         omahaTag: "Physiological/Skin", 
-        summary: "【身体】血圧は130台で安定。褥瘡（仙骨部）は肉芽形成期入り。",
-        history: [{ date: "12/15 09:30", staff: "Ns.山田", content: "定期訪問。バイタル安定。" }],
+        // Updated Structured Summary Data
+        structuredSummary: [
+            { type: "alert", label: "最大リスク", text: "心不全増悪リスクあり (直近3日体重＋2kg)" },
+            { type: "ng", label: "禁止事項", text: "左上肢で血圧測定禁止 (シャントあり)" },
+            { type: "todo", label: "重点ケア", text: "下肢浮腫の観察を重点的に / 褥瘡部位の写真記録必須" },
+            { type: "change", label: "直近変化", text: "SpO₂: 96% → 93% (労作時低下あり)" },
+            { type: "family", label: "家族・本人", text: "本人は症状を過小申告しがち。奥様に確認すること。" },
+            // Priority 2
+            { type: "info", label: "病態フェーズ", text: "慢性心不全・増悪予備軍" },
+            { type: "info", label: "最新指示", text: "利尿剤増量検討中 (12/18 Dr.山田指示)" },
+            { type: "info", label: "服薬・機器", text: "利尿剤の飲み忘れ注意" },
+            { type: "info", label: "生活背景", text: "日中独居 / 室内犬あり" }
+        ],
+        summary: "心不全増悪リスクあり。体重増加傾向。左上肢血圧測定禁止。下肢浮腫観察が必要。", // For Text-to-Speech
+        history: [
+            { date: "12/19 09:30", staff: "Ns.山田", content: "定期訪問。バイタル安定。浮腫軽度。" },
+            { date: "12/17 09:30", staff: "Ns.高橋", content: "定期訪問。体重+1kg。SpO2 94%。Dr報告済。" },
+            { date: "12/15 09:30", staff: "Ns.山田", content: "定期訪問。入浴介助実施。皮膚トラブルなし。" },
+            { date: "12/12 09:30", staff: "Ns.山田", content: "定期訪問。内服管理指導。残薬調整。" },
+            { date: "12/10 09:30", staff: "Ns.高橋", content: "定期訪問。足浴実施。爪切り。" },
+            { date: "12/08 09:30", staff: "Ns.山田", content: "定期訪問。バイタル安定。妻より食事相談あり。" },
+            { date: "12/05 09:30", staff: "Ns.山田", content: "定期訪問。排便コントロール良好。" },
+            { date: "12/03 09:30", staff: "Ns.高橋", content: "定期訪問。リハビリ意欲低下気味。" },
+            { date: "12/01 09:30", staff: "Ns.山田", content: "定期訪問。月初の保険証確認。" },
+            { date: "11/28 09:30", staff: "Ns.山田", content: "定期訪問。呼吸苦の訴えなし。" }
+        ],
         omahaScores: { k: [2,2,3,3,3], b: [3,3,3,4,4], s: [2,2,3,3,3] },
         parking: "https://maps.google.com/?q=parking+hachioji",
         billingProps: [
@@ -869,7 +887,11 @@ const patientDatabase = {
     2: { 
         name: "佐藤 花子",
         omahaTag: "Physiological/Neuro-Digest", 
-        summary: "【身体】パーキンソン病。すくみ足・嚥下低下あり。",
+        structuredSummary: [
+             { type: "alert", label: "最大リスク", text: "転倒リスク高 (先週転倒歴あり)" },
+             { type: "ng", label: "禁止事項", text: "単独での歩行移動禁止" }
+        ],
+        summary: "転倒リスク高。単独歩行禁止。",
         history: [{ date: "12/15 11:00", staff: "Ns.佐藤", content: "入浴介助。" }],
         omahaScores: { k: [2,2,2,3,3], b: [2,2,3,3,3], s: [3,3,3,3,3] },
         parking: "https://maps.google.com/?q=parking+hachioji",
@@ -880,7 +902,11 @@ const patientDatabase = {
     3: { 
         name: "鈴木 一郎",
         omahaTag: "Physiological/Neuro-Mobility", 
-        summary: "【身体】左片麻痺。リハビリ意欲高。",
+        structuredSummary: [
+             { type: "alert", label: "最大リスク", text: "誤嚥リスク高 (むせ込み増加)" },
+             { type: "todo", label: "重点ケア", text: "食事形態の確認・嚥下体操" }
+        ],
+        summary: "誤嚥リスク高。食事形態確認。",
         history: [{ date: "12/15 13:30", staff: "PT.鈴木", content: "リハビリ。平行棒歩行。" }],
         omahaScores: { k: [4,4,4,5,5], b: [4,4,5,5,5], s: [3,3,4,4,4] },
         parking: "https://maps.google.com/?q=parking+hachioji",
@@ -896,6 +922,13 @@ const parkingRecords = [
     { date: "12/18", staff: "PT.鈴木", patient: "鈴木 一郎", amount: 600 },
     { date: "12/18", staff: "Ns.山田", patient: "田中 太郎", amount: 400 },
     { date: "12/17", staff: "Ns.高橋", patient: "佐藤 花子", amount: 400 }
+];
+
+const treatmentItems = [
+    { cat: "清潔・整容・排泄", items: ["清拭", "入浴介助", "手浴・足浴", "洗髪", "口腔ケア", "爪切り", "更衣介助", "オムツ交換", "陰部洗浄", "摘便", "浣腸", "ストマケア"] },
+    { cat: "医療処置", items: ["褥瘡処置", "創傷処置", "点滴管理", "静脈注射", "筋肉/皮下注射", "血糖測定", "インスリン", "経管栄養", "胃瘻管理", "吸引", "吸入", "酸素管理", "カテーテル管理"] },
+    { cat: "観察・測定", items: ["バイタル測定", "フィジカルアセスメント", "疼痛評価", "浮腫確認", "皮膚観察", "服薬確認", "残薬確認", "食事摂取量", "排便・排尿量"] },
+    { cat: "リハビリ・指導", items: ["ROM訓練", "歩行訓練", "端座位保持", "嚥下訓練", "呼吸リハ", "家族指導", "環境整備", "療養相談"] }
 ];
 
 // --- Login & Utils ---
@@ -918,7 +951,7 @@ function setTab(id) {
     if(tabs[tabMap[id]]) tabs[tabMap[id]].classList.add('active');
     if(id === 'home') loadHomeMemo();
     if(id === 'calendar') renderCalendar();
-    if(id === 'record') { if(!myChart) setTimeout(initChart, 100); switchPatient(); }
+    if(id === 'record') { if(!myChart) setTimeout(initChart, 100); switchPatient(); renderTreatmentList(); }
     if(id === 'admin') { 
         setTimeout(renderMap, 100); 
         loadAdminMemo(); 
@@ -1002,7 +1035,11 @@ function startVoiceInput() { document.getElementById('aiInputMemo').value += " �
 function toggleFaceSheet() { const el = document.getElementById('faceSheetPanel'); el.style.display = el.style.display==='none'?'block':'none'; }
 function goToPatient(id) { document.getElementById('patientSelector').value = id; setTab('record'); }
 function enableEdit(id) { const el = document.getElementById(id); el.contentEditable = "true"; el.focus(); el.style.backgroundColor = "#fff"; el.style.border = "1px solid var(--primary)"; el.onblur = function() { el.contentEditable = "false"; el.style.backgroundColor = ""; el.style.border = "transparent"; }; }
-function speakSummary() { const u = new SpeechSynthesisUtterance(document.getElementById('aiSummaryText').innerText); u.lang = "ja-JP"; speechSynthesis.speak(u); }
+function speakSummary() { 
+    const pid = document.getElementById('patientSelector').value;
+    const txt = patientDatabase[pid].summary;
+    const u = new SpeechSynthesisUtterance(txt); u.lang = "ja-JP"; speechSynthesis.speak(u); 
+}
 
 // Billing with Description Toggle
 function initBilling() { 
@@ -1032,6 +1069,18 @@ function toggleBillingDesc(id) {
 }
 
 function calcBilling() { let total = 5550; document.querySelectorAll('#billingSuggestionList input:checked').forEach(e => { total += parseInt(e.dataset.p) * 10; }); document.getElementById('billingGrandTotal').innerText = total.toLocaleString() + " 円"; }
+
+function renderTreatmentList() {
+    const container = document.getElementById('treatmentFullList');
+    if(container.innerHTML.trim() !== "") return;
+    treatmentItems.forEach(cat => {
+        let itemsHtml = "";
+        cat.items.forEach(item => {
+            itemsHtml += `<label class="treatment-item"><input type="checkbox" onchange="toggleTreatment('${item}')"> ${item}</label>`;
+        });
+        container.innerHTML += `<span class="treatment-category-label">${cat.cat}</span><div class="treatment-grid">${itemsHtml}</div>`;
+    });
+}
 
 function toggleTreatment(name) { const ta = document.getElementById('aiInputMemo'); if(!ta.value.includes(name)) ta.value += (ta.value ? " " : "") + name + "実施。"; }
 
@@ -1105,7 +1154,33 @@ function renderRecordKbsTable(pid) {
 function switchPatient() {
     const pid = document.getElementById('patientSelector').value; const data = patientDatabase[pid];
     if(data) {
-        document.getElementById('aiSummaryText').innerText = data.summary;
+        // AI Structured Summary
+        const sumContainer = document.getElementById('aiSummaryContainer');
+        sumContainer.innerHTML = `<div class="summary-box-structured"></div>`;
+        const box = sumContainer.querySelector('.summary-box-structured');
+        if(data.structuredSummary) {
+            data.structuredSummary.forEach(item => {
+                let cssClass = "";
+                if(item.type === 'alert') cssClass = "sb-alert";
+                else if(item.type === 'ng') cssClass = "sb-ng";
+                else if(item.type === 'todo') cssClass = "sb-todo";
+                else if(item.type === 'change') cssClass = "sb-change";
+                else if(item.type === 'family') cssClass = "sb-family";
+                else cssClass = "sb-row"; // normal
+
+                let icon = "";
+                if(item.type==='alert') icon='<i class="fa-solid fa-triangle-exclamation"></i> ';
+                if(item.type==='ng') icon='<i class="fa-solid fa-ban"></i> ';
+                if(item.type==='todo') icon='<i class="fa-solid fa-check"></i> ';
+                if(item.type==='change') icon='<i class="fa-solid fa-chart-line"></i> ';
+                if(item.type==='family') icon='<i class="fa-solid fa-user-group"></i> ';
+
+                box.innerHTML += `<div class="sb-row ${cssClass}"><span class="sb-label">${icon}${item.label}</span>${item.text}</div>`;
+            });
+        } else {
+            box.innerHTML = `<div class="sb-row">サマリー情報なし</div>`;
+        }
+
         const list = document.getElementById('historyList'); list.innerHTML = "";
         data.history.forEach(h => { list.innerHTML += `<div class="history-item"><div class="history-meta"><span>${h.date}</span><span style="font-weight:bold; color:var(--primary);">${h.staff}</span></div><div class="history-content">${h.content}</div></div>`; });
         
@@ -1258,91 +1333,71 @@ function renderHRCards() {
     });
 }
 
-// Feature A-1 & A-3: 24H Schedule and Optimization
+// Feature A-1: 24H Realistic Schedule
 function render24HSchedule() {
     const thead = document.querySelector('#adminScheduleTable thead tr');
     const tbody = document.getElementById('adminScheduleBody');
     if(thead.children.length > 1) return; 
 
+    // Header 0:00 to 23:00
     let headerHtml = '<th style="width:80px; position:sticky; left:0; background:#f9fafb; z-index:10; border-right:2px solid #ddd;">氏名</th>';
-    for(let i=8; i<32; i++) { 
-        let h = i % 24;
-        let display = `${h}:00`;
+    for(let i=0; i<24; i++) { 
+        let display = `${i}:00`;
         headerHtml += `<th colspan="2" style="border-right:1px solid #ddd;">${display}</th>`;
     }
     thead.innerHTML = headerHtml;
 
-    let row1 = `<tr><td style="font-weight:bold; font-size:12px; padding-left:4px; position:sticky; left:0; background:#fff; z-index:10; border-right:2px solid #ddd;">Ns.山田</td>`;
-    for(let i=0; i<48; i++) { 
-        let content = "";
-        let idAttr = "";
-        let colspan = 1;
-        
-        if(i===2) { content = '<div class="time-slot ts-visit">田中様</div>'; colspan=2; } 
-        else if(i===3) { content=""; } 
-        
-        else if(i===10) { content = '<div class="time-slot ts-visit" id="slot_yamada_suzuki">鈴木様</div>'; colspan=2; idAttr='id="td_yamada_1300"'; } 
-        else if(i===11) { content=""; }
-        
-        else if(i===12) { content = ''; idAttr='id="td_yamada_1400"'; } 
-        
-        else if(i===20) { content = '<div class="time-slot ts-oncall">待機(夜)</div>'; colspan=12; } 
-        else if(i>20 && i<32) { content=""; }
+    // Helper to add empty cells
+    const createRow = (name, schedule) => {
+        let html = `<tr><td style="font-weight:bold; font-size:12px; padding-left:4px; position:sticky; left:0; background:#fff; z-index:10; border-right:2px solid #ddd;">${name}</td>`;
+        // 24h * 2 slots = 48 slots (30min each)
+        for(let i=0; i<48; i++) {
+            let found = null;
+            let skip = false;
+            // check if this slot is start of an event
+            for(let evt of schedule) {
+                if(evt.start === i) { found = evt; break; }
+                if(i > evt.start && i < evt.start + evt.len) { skip = true; break; }
+            }
 
-        if(content !== undefined && content !== "") row1 += `<td colspan="${colspan}" ${idAttr}>${content}</td>`;
-        else if(content === "") { }
-        else row1 += `<td></td>`;
-    }
-    row1 += "</tr>";
-
-    let row2 = `<tr><td style="font-weight:bold; font-size:12px; padding-left:4px; position:sticky; left:0; background:#fff; z-index:10; border-right:2px solid #ddd;">PT.鈴木</td>`;
-    for(let i=0; i<48; i++) {
-        let content = undefined;
-        let colspan = 1;
-        if(i===6) { content = '<div class="time-slot ts-visit" style="background:#fef9c3; border-color:#fde047; color:#854d0e;">リハビリ</div>'; colspan=3; } 
-        else if(i>6 && i<9) { content=""; }
-        
-        if(content !== undefined && content !== "") row2 += `<td colspan="${colspan}">${content}</td>`;
-        else if(content === "") { }
-        else row2 += `<td></td>`;
-    }
-    row2 += "</tr>";
-
-    tbody.innerHTML = row1 + row2;
-}
-
-// Feature A-3: Optimization Simulation
-function runOptimization() {
-    const btn = document.querySelector('#adminMap + div button');
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 計算中...';
-    
-    setTimeout(() => {
-        const resBox = document.getElementById('optResult');
-        resBox.innerHTML = `
-            <strong><i class="fa-solid fa-check"></i> 最適化完了</strong><br>
-            Ns.山田の 13:00 鈴木様訪問 を <strong>14:00</strong> に変更しました。<br>
-            総移動距離: 18.5km <i class="fa-solid fa-arrow-right"></i> <strong>12.3km</strong> (▲6.2km短縮)
-        `;
-        resBox.style.display = 'block';
-
-        const oldCell = document.getElementById('td_yamada_1300'); 
-        const newCell = document.getElementById('td_yamada_1400'); 
-        
-        if(oldCell && newCell) {
-            const slotDiv = document.getElementById('slot_yamada_suzuki');
-            if(slotDiv) {
-                slotDiv.classList.add('highlight-change');
-                oldCell.innerHTML = ""; 
-                oldCell.removeAttribute('colspan'); 
-                newCell.setAttribute('colspan', '2');
-                newCell.innerHTML = '<div class="time-slot ts-visit highlight-change">鈴木様</div>';
-                if(newCell.nextElementSibling) newCell.nextElementSibling.style.display = 'none';
+            if(found) {
+                let cls = "ts-visit";
+                if(found.type === "break") cls = "ts-break";
+                if(found.type === "mtg") cls = "ts-mtg";
+                if(found.type === "oncall") cls = "ts-oncall";
+                html += `<td colspan="${found.len}"><div class="time-slot ${cls}">${found.txt}</div></td>`;
+            } else if(!skip) {
+                html += `<td></td>`;
             }
         }
+        html += "</tr>";
+        return html;
+    };
 
-        btn.innerHTML = '最適化実行';
-        btn.classList.add('btn-ghost');
-    }, 1500);
+    // Realistic Schedules (30min units. 9:00 = 18)
+    const yamadaSch = [
+        {start:18, len:2, txt:"田中様", type:"visit"}, // 9:00-10:00
+        {start:22, len:2, txt:"佐藤様", type:"visit"}, // 11:00-12:00
+        {start:24, len:2, txt:"休憩", type:"break"},   // 12:00-13:00
+        {start:27, len:2, txt:"伊藤様", type:"visit"}, // 13:30-14:30
+        {start:31, len:2, txt:"MTG", type:"mtg"},      // 15:30-16:30
+        {start:40, len:8, txt:"夜間待機", type:"oncall"} // 20:00-24:00+
+    ];
+    const takahashiSch = [
+        {start:19, len:3, txt:"高橋様", type:"visit"}, // 9:30-11:00
+        {start:24, len:2, txt:"休憩", type:"break"},   // 12:00-13:00
+        {start:26, len:2, txt:"山本様", type:"visit"}, // 13:00-14:00
+        {start:30, len:2, txt:"加藤様", type:"visit"}  // 15:00-16:00
+    ];
+    const suzukiSch = [
+        {start:18, len:2, txt:"リハビリ", type:"visit"}, // 9:00
+        {start:21, len:2, txt:"リハビリ", type:"visit"}, // 10:30
+        {start:24, len:2, txt:"休憩", type:"break"},     // 12:00
+        {start:27, len:2, txt:"鈴木様", type:"visit"},   // 13:30
+        {start:30, len:2, txt:"リハビリ", type:"visit"}  // 15:00
+    ];
+
+    tbody.innerHTML = createRow("Ns.山田", yamadaSch) + createRow("Ns.高橋", takahashiSch) + createRow("PT.鈴木", suzukiSch);
 }
 
 window.onload = function() { initOmahaSelector(); };
