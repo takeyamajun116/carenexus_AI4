@@ -1,0 +1,3135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>CareNexus AI - 訪問看護ステーション向け</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+
+    /* ===== 算定チェック 行の色分け ===== */
+
+.billing-row {
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.billing-row-applied {
+  background: #ecfdf3;
+  border-left: 4px solid #16a34a;
+}
+
+.billing-row-candidate {
+  background: #eff6ff;
+  border-left: 4px solid #2563eb;
+}
+
+.billing-row-warning {
+  background: #fef2f2;
+  border-left: 4px solid #dc2626;
+}
+
+.billing-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  margin-right: 6px;
+  font-weight: 600;
+}
+
+.billing-badge-applied {
+  background: #bbf7d0;
+  color: #166534;
+}
+
+.billing-badge-candidate {
+  background: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.billing-badge-warning {
+  background: #fecaca;
+  color: #b91c1c;
+}
+
+    :root {
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+        "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+      color: #111827;
+      background: #f3f4f6;
+    }
+    body {
+      margin: 0;
+      background: #f3f4f6;
+    }
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(16px);
+      background: rgba(243, 244, 246, 0.9);
+      border-bottom: 1px solid #e5e7eb;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .logo {
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .logo-img {
+    height: 50px; 
+    width: auto; 
+    display: block; 
+}
+    .logo-text {
+      white-space: nowrap;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+    }
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    .admin-btn {
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      padding: 4px 10px;
+      font-size: 11px;
+      background: #ffffff;
+      cursor: pointer;
+    }
+    main {
+      padding: 16px;
+      flex: 1;
+    }
+    .tabs {
+      display: flex;
+      border-radius: 999px;
+      background: #e5e7eb;
+      padding: 4px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      gap: 4px;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px 0;
+      font-size: 13px;
+      border-radius: 999px;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      min-width: 80px;
+    }
+    .tab.active {
+      background: #ffffff;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+      font-weight: 600;
+    }
+    .section {
+      display: none;
+    }
+    .section.active {
+      display: block;
+    }
+
+    .visit-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+    }
+    .card {
+      border-radius: 16px;
+      background: #ffffff;
+      padding: 12px 14px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .time {
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .priority {
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .priority-high {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .priority-mid {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .priority-low {
+      background: #e5e7eb;
+      color: #374151;
+    }
+    .name-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      justify-content: flex-end;
+    }
+    .tag-type {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+    }
+    .tag-type-med {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+    .tag-type-care {
+      background: #dbeafe;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+    }
+    .diag {
+      font-size: 12px;
+      color: #4b5563;
+    }
+    .addr {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .visit-risk-line {
+      font-size: 11px;
+      color: #374151;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 2px;
+    }
+    .risk-pill-mini {
+      border-radius: 999px;
+      padding: 1px 6px;
+      font-size: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .risk-acute-normal { background:#dcfce7; color:#166534; }
+    .risk-acute-caution { background:#fef3c7; color:#92400e; }
+    .risk-acute-alert { background:#fee2e2; color:#b91c1c; }
+    .risk-fall-low { background:#e0f2fe; color:#1d4ed8; }
+    .risk-fall-mid { background:#fef3c7; color:#92400e; }
+    .risk-fall-high { background:#fee2e2; color:#b91c1c; }
+
+    .card-footer {
+      margin-top: 4px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      border-radius: 999px;
+      border: none;
+      padding: 6px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary {
+      background: #111827;
+      color: #ffffff;
+    }
+    .btn-outline {
+      background: #ffffff;
+      color: #111827;
+      border: 1px solid #d1d5db;
+    }
+
+    .two-column {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    @media (min-width: 900px) {
+      .two-column {
+        flex-direction: row;
+      }
+    }
+    .panel {
+      flex: 1;
+      border-radius: 16px;
+      background: #ffffff;
+      padding: 12px 14px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    }
+    .panel-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .field-label {
+      font-size: 12px;
+      color: #4b5563;
+      margin-top: 6px;
+      margin-bottom: 2px;
+    }
+    textarea, input, select {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 13px;
+      padding: 6px 8px;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    textarea {
+      min-height: 240px;
+      resize: vertical;
+    }
+    .soap-block {
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+    .soap-label {
+      font-weight: 600;
+      margin-right: 4px;
+    }
+    .status-line {
+      font-size: 11px;
+      color: #6b7280;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .status-pill {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      color: #374151;
+    }
+    .api-check {
+      font-size: 11px;
+      color: #6b7280;
+      text-align: right;
+      margin-top: 4px;
+    }
+        /* ===== 算定チェック（AI案） ===== */
+    .billing-summary {
+      font-size: 12px;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+    .billing-list {
+      max-height: 260px;
+      overflow: auto;
+      font-size: 12px;
+    }
+    .billing-item {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 6px 0;
+    }
+    .billing-item:last-child {
+      border-bottom: none;
+    }
+    .billing-meta {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 2px;
+    }
+    .billing-body {
+      font-size: 12px;
+      color: #374151;
+    }
+    .billing-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+    }
+    .billing-pill-info {
+      background: #e0f2fe;
+      color: #1d4ed8;
+    }
+        /* 適用中（現在算定中）用の色：青 */
+    .billing-pill-info-current {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    /* 候補（算定できそう）用の色：緑 */
+    .billing-pill-info-candidate {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .billing-pill-alert {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .api-check button {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      cursor: pointer;
+    }
+    .record-item {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 6px 0;
+    }
+    .record-item:last-child {
+      border-bottom: none;
+    }
+    .record-meta {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 2px;
+    }
+    .record-body {
+      font-size: 12px;
+      color: #374151;
+    }
+
+    .staff-item {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 8px 0;
+    }
+    .staff-item:last-child {
+      border-bottom: none;
+    }
+    .staff-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .risk-pill {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .risk-high {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .risk-mid {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .risk-low {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .staff-detail {
+      font-size: 11px;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+    .staff-note {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 8px;
+    }
+
+    .patient-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    @media (min-width: 900px) {
+      .patient-layout {
+        flex-direction: row;
+      }
+    }
+    .patient-list-panel {
+      flex: 0 0 280px;
+      max-width: 320px;
+    }
+    .patient-list {
+      max-height: 320px;
+      overflow: auto;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+    }
+    .patient-list-item {
+      padding: 8px 10px;
+      border-bottom: 1px solid #f3f4f6;
+      cursor: pointer;
+    }
+    .patient-list-item:last-child {
+      border-bottom: none;
+    }
+    .patient-list-item.active {
+      background: #eff6ff;
+    }
+    .patient-list-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .patient-list-sub {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .patient-form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px 12px;
+    }
+    .patient-section-title {
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+      margin-bottom: 4px;
+      color: #374151;
+    }
+    .patient-history {
+      margin-top: 10px;
+      font-size: 12px;
+      max-height: 220px;
+      overflow: auto;
+    }
+    .patient-history-item {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 6px 0;
+    }
+    .patient-history-item:last-child {
+      border-bottom: none;
+    }
+
+    .vital-status-pill {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .vital-status-normal {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .vital-status-caution {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .vital-status-alert {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .vital-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-top: 8px;
+    }
+    .vital-table th,
+    .vital-table td {
+      border: 1px solid #e5e7eb;
+      padding: 4px 6px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .vital-table th {
+      background: #f9fafb;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .vital-row-normal {
+      background: #ffffff;
+    }
+    .vital-row-caution {
+      background: #fffbeb;
+    }
+    .vital-row-alert {
+      background: #fef2f2;
+    }
+    .vital-legend {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .family-report-block {
+      margin-top: 10px;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 8px;
+      font-size: 12px;
+    }
+    .family-report-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .family-report-text {
+      font-size: 12px;
+      color: #374151;
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 8px;
+      white-space: pre-wrap;
+    }
+
+    .map-wrapper {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .map-container {
+      position: relative;
+      width: 100%;
+      height: 320px;
+      border-radius: 16px;
+      border: 1px solid #e5e7eb;
+      background: radial-gradient(circle at top left, #eff6ff, #f9fafb);
+      overflow: hidden;
+    }
+    .map-grid {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(to right, #e5e7eb 1px, transparent 1px),
+                        linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .map-marker {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 1px 3px rgba(15,23,42,0.25);
+      background: #ffffff;
+    }
+    .map-marker-nurse {
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+    }
+    .map-marker-patient {
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+    }
+    .map-marker-nearest {
+      border-width: 2px;
+      border-color: #16a34a;
+    }
+    .map-legend {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .billing-item {
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 10px;
+  background: #f7f7f7;
+}
+
+.billing-item.applied { border-left: 5px solid #007bff; }
+.billing-item.candidate { border-left: 5px solid #ffcc00; }
+.billing-item.alert { border-left: 5px solid #ff4444; }
+
+.billing-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.billing-reason {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.edu-box {
+  white-space: pre-wrap;
+  padding: 10px;
+  border-radius: 10px;
+  background: #eef6ff;
+}
+
+        /* ===== 多職種チャット用 ===== */
+    .chat-panel {
+      margin-top: 16px;
+    }
+    .chat-header-line {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+    .chat-message-list {
+      max-height: 220px;
+      overflow: auto;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      padding: 8px 10px;
+      background: #f9fafb;
+      box-sizing: border-box;
+    }
+    .chat-empty {
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .chat-message {
+      margin-bottom: 8px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      background: #ffffff;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      font-size: 12px;
+    }
+    .chat-message:last-child {
+      margin-bottom: 0;
+    }
+    .chat-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .chat-role-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #e5e7eb;
+      color: #374151;
+    }
+    .chat-role-nurse {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+    .chat-role-doctor {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .chat-role-pharmacist {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .chat-role-caremanager {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+    .chat-body {
+      white-space: pre-wrap;
+      color: #374151;
+    }
+    .chat-input-area {
+      margin-top: 8px;
+    }
+    .chat-input-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 160px) 1fr;
+      gap: 8px;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+    .chat-input-row select {
+      font-size: 12px;
+    }
+    .chat-template-note {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <div class="logo">
+          <img src="CareNexuslogo.png" alt="Home-Care Navigator" class="logo-img" />
+          <span class="logo-text">Home-Care Navigator</span>
+        </div>
+        <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="badge">デモ環境 / ローカル</div>
+        <button id="adminBtn" class="admin-btn">管理者モード</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="tabs">
+        <div class="tab active" data-tab="list">本日の訪問</div>
+        <div class="tab" data-tab="vitals">バイタルサイン</div>
+        <div class="tab" data-tab="record">記録（SOAP）</div>
+        <div class="tab" data-tab="patient">利用者情報</div>
+        <div class="tab tab-admin" data-tab="staff" style="display:none;">スタッフ状況</div>
+      </div>
+
+      <!-- 本日の訪問一覧 -->
+      <section id="section-list" class="section active">
+        <div class="status-line">
+          <span>AIが優先度とリスクを提案しています（★ 緊急 / ▲ 注意 / ● 通常）</span>
+          <span class="status-pill" id="todayLabel"></span>
+        </div>
+        <div class="visit-list" id="visitList"></div>
+
+        <div class="api-check">
+          <span id="apiStatusText">API 未確認</span>
+          <button id="apiCheckBtn">API 接続確認</button>
+        </div>
+      </section>
+
+      <!-- バイタルサイン専用タブ -->
+      <section id="section-vitals" class="section">
+        <div class="panel">
+          <div class="panel-title">
+            <span id="vitalTitle">バイタルサイン</span>
+            <span>
+              <span id="vitalStatusBadge" class="vital-status-pill vital-status-normal" style="display:none;"></span>
+              <span id="fallStatusBadge" class="vital-status-pill" style="display:none; margin-left:4px; background:#eef2ff; color:#3730a3;"></span>
+            </span>
+          </div>
+          <div id="vitalSummary" style="font-size:12px; color:#374151; margin-bottom:8px;">
+            本日の訪問から対象利用者を選択するか、「バイタルデータを閲覧する」を押してください。
+          </div>
+
+          <div id="vitalCharts" style="display:none; margin-top:8px;">
+            <div style="margin-bottom:12px;">
+              <div style="font-size:11px; color:#4b5563; margin-bottom:4px;">HR / RR 推移</div>
+              <canvas id="chart_hr_rr" height="220" style="width:100%;"></canvas>
+              <div id="info_hr_rr" style="font-size:11px; color:#374151; margin-top:2px;"></div>
+            </div>
+            <div style="margin-bottom:12px;">
+              <div style="font-size:11px; color:#4b5563; margin-bottom:4px;">血圧 (収縮期 / 拡張期)</div>
+              <canvas id="chart_bp" height="220" style="width:100%;"></canvas>
+              <div id="info_bp" style="font-size:11px; color:#374151; margin-top:2px;"></div>
+            </div>
+            <div style="margin-bottom:4px;">
+              <div style="font-size:11px; color:#4b5563; margin-bottom:4px;">SpO₂ / 体重</div>
+              <canvas id="chart_spo2_weight" height="220" style="width:100%;"></canvas>
+              <div id="info_spo2_weight" style="font-size:11px; color:#374151; margin-top:2px;"></div>
+            </div>
+          </div>
+
+          <div id="vitalTableWrapper" style="max-height:260px; overflow:auto; margin-top:8px; display:none;">
+            <table class="vital-table">
+              <thead>
+                <tr>
+                  <th>時系列（最新が上）</th>
+                  <th>HR</th>
+                  <th>収縮期BP</th>
+                  <th>拡張期BP</th>
+                  <th>RR</th>
+                  <th>SpO₂</th>
+                  <th>体重(kg)</th>
+                </tr>
+              </thead>
+              <tbody id="vitalTableBody"></tbody>
+            </table>
+          </div>
+
+          <div class="vital-legend" id="vitalLegend" style="display:none;">
+            行の背景色：白＝正常 / クリーム色＝注意 / 赤＝要注意（直近ほど上に表示）。<br>
+            HR・BP・RR・SpO₂の組み合わせと、体重変化（約2kg以上の増加）からAIがざっくり評価しています。
+          </div>
+        </div>
+      </section>
+
+      <!-- 記録画面 -->
+      <section id="section-record" class="section">
+        <div class="two-column">
+          <div class="panel">
+            <div class="panel-title">
+              <span id="recordTitle">記録対象：未選択</span>
+              <span style="font-size: 11px; color:#6b7280;">音声メモ → テキスト入力 想定</span>
+            </div>
+            <div class="field-label">自由記載メモ</div>
+            <textarea id="freeText" placeholder="バイタル、処置内容、利用者の様子などを入力してください。"></textarea>
+
+            <!-- 音声入力ボタン -->
+            <div style="margin-top:6px; display:flex; justify-content:flex-end; gap:8px;">
+              <button id="voiceInputBtn" class="btn btn-outline">音声入力</button>
+              <span id="voiceStatus" style="font-size:11px; color:#6b7280;"></span>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
+              <button class="btn btn-outline" id="btnDraft">下書き保存</button>
+              <button class="btn btn-primary" id="btnGenerate">SOAP＋看護診断案を生成</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title">
+              <span>AI 提案（SOAP形式＋看護診断）</span>
+              <span style="font-size: 11px; color:#6b7280;">※必ず看護師が確認・修正してください。</span>
+            </div>
+            <div id="soapArea">
+              <div class="soap-block">
+                <span class="soap-label">S:</span>
+                <span id="soapS">自由記載から主観情報を要約します。</span>
+              </div>
+              <div class="soap-block">
+                <span class="soap-label">O:</span>
+                <span id="soapO">バイタルや観察所見がここにまとまります。</span>
+              </div>
+              <div class="soap-block">
+                <span class="soap-label">A:</span>
+                <span id="soapA">全体から看護師としての判断が整理されます。</span>
+              </div>
+              <div class="soap-block">
+                <span class="soap-label">P:</span>
+                <span id="soapP">次回訪問や今後の計画・指導内容を提案します。</span>
+              </div>
+              <div class="soap-block">
+                <span class="soap-label">看護診断:</span>
+                <span id="soapDx">NANDA-I を参考にした看護診断案が表示されます。</span>
+              </div>
+            </div>
+
+            <!-- 家族向けレポート -->
+            <div class="family-report-block">
+              <div class="family-report-title">家族向けレポート（AI案）</div>
+              <div style="font-size:11px; color:#6b7280; margin-bottom:4px;">
+                専門用語をできるだけ使わずに、最近の体調や今後の方針を家族向けにまとめます。
+              </div>
+              <div class="family-report-text" id="familyReportText">
+                ここに家族向けの説明文が表示されます。
+              </div>
+              <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:6px;">
+                <button class="btn btn-outline" id="btnFamilyReport">家族向けレポートを生成</button>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
+              <button class="btn btn-outline" id="btnResetSoap">クリア</button>
+              <button class="btn btn-primary" id="btnFix">この内容で記録済みにする（ローカル保存）</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;">
+          <div class="panel">
+            <div class="panel-title">
+              <span>この端末に保存されている記録（デモ）</span>
+                      <!-- 多職種チャット（ローカル保存デモ） -->
+        <div class="chat-panel">
+          <div class="panel">
+            <div class="panel-title">
+              <span>多職種チャット（主治医・薬剤師・ケアマネ等）</span>
+              <span style="font-size:11px; color:#6b7280;">
+                この利用者に関わる医療・介護職とのやりとり（デモ／この端末のみ保存）
+              </span>
+            </div>
+
+            <div class="chat-header-line" id="chatHeaderLine">
+              記録対象の利用者を選択すると、その方に紐づくやり取りが表示されます。
+            </div>
+
+            <div id="chatMessageList" class="chat-message-list">
+              <div class="chat-empty">
+                まだメッセージはありません。<br>
+                「本日の訪問」から利用者を選択し、下のフォームから送信してください。
+              </div>
+            </div>
+
+            <div class="chat-input-area">
+              <div class="chat-input-row">
+                <div>
+                  <div class="field-label">送信者（自分の立場）</div>
+                  <select id="chatSenderRole">
+                    <option value="看護師">看護師（自分）</option>
+                    <option value="主治医">主治医</option>
+                    <option value="薬剤師">薬剤師</option>
+                    <option value="ケアマネジャー">ケアマネジャー</option>
+                    <option value="リハビリ">リハビリ職</option>
+                    <option value="訪問介護">訪問介護</option>
+                    <option value="その他">その他</option>
+                  </select>
+                </div>
+                <div>
+                  <div class="field-label">メッセージ内容</div>
+                  <textarea id="chatInput" placeholder="例）最近の夜間の息苦しさが増えているため、利尿薬の調整についてご相談させてください。"></textarea>
+                </div>
+              </div>
+
+              <div class="chat-template-note">
+                ※実運用では、実際のチャットシステム（LINE WORKS やメッセージ機能）と連携想定。<br>
+                このデモでは、この Mac のみで閲覧できるローカル保存です。
+              </div>
+
+              <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:6px;">
+                <button class="btn btn-outline" id="btnChatTemplate">定型文を挿入</button>
+                <button class="btn btn-primary" id="btnChatSend">送信（この端末に保存）</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+              <button class="btn btn-outline" id="btnClearAll" style="padding:4px 10px; font-size:11px;">
+                全件削除
+              </button>
+            </div>
+            <div id="recordList" style="max-height:220px; overflow:auto; font-size:12px; color:#374151;">
+              まだ記録はありません。
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 利用者情報 -->
+      <section id="section-patient" class="section">
+        <div class="patient-layout">
+          <div class="patient-list-panel">
+            <div class="panel">
+              <div class="panel-title">
+                <span>利用者一覧</span>
+                <button id="btnNewPatient" class="btn btn-outline" style="padding:4px 10px; font-size:11px;">
+                  新規追加
+                </button>
+              </div>
+              <div class="patient-list" id="patientList">
+                <div style="font-size:12px; color:#6b7280; padding:8px 10px;">
+                  まだ利用者情報がありません。<br>
+                  本日の訪問から記録を保存するか、「新規追加」から入力してください。
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" style="flex:1;">
+            <div class="panel-title">
+              <span id="patientFormTitle">利用者詳細</span>
+              <span style="font-size:11px; color:#6b7280;">電子カルテの主要項目を簡略表示</span>
+            </div>
+
+            <div class="patient-section-title">基本情報</div>
+            <div class="patient-form-grid">
+              <div>
+                <div class="field-label">氏名</div>
+                <input id="p_name" type="text" placeholder="例）田中 太郎" />
+              </div>
+              <div>
+                <div class="field-label">フリガナ</div>
+                <input id="p_kana" type="text" placeholder="タナカ タロウ" />
+              </div>
+              <div>
+                <div class="field-label">性別</div>
+                <select id="p_sex">
+                  <option value="">選択してください</option>
+                  <option value="男">男</option>
+                  <option value="女">女</option>
+                  <option value="その他">その他</option>
+                </select>
+              </div>
+              <div>
+                <div class="field-label">生年月日</div>
+                <input id="p_birth" type="date" />
+              </div>
+              <div>
+                <div class="field-label">郵便番号</div>
+                <input id="p_postal" type="text" placeholder="例）160-0000" />
+              </div>
+              <div>
+                <div class="field-label">住所</div>
+                <input id="p_address" type="text" placeholder="都道府県・市区町村・番地" />
+              </div>
+              <div>
+                <div class="field-label">電話番号</div>
+                <input id="p_phone" type="text" placeholder="連絡先電話番号" />
+              </div>
+              <div>
+                <div class="field-label">緊急連絡先</div>
+                <input id="p_emergency" type="text" placeholder="氏名・続柄・電話番号など" />
+              </div>
+            </div>
+
+            <div class="patient-section-title">家族・生活背景</div>
+            <div class="patient-form-grid">
+              <div style="grid-column: 1 / -1;">
+                <div class="field-label">家族構成・同居状況</div>
+                <input id="p_family" type="text" placeholder="例）長男夫婦と同居、長女は近隣在住 など" />
+              </div>
+            </div>
+
+            <div class="patient-section-title">保険・介護情報</div>
+            <div class="patient-form-grid">
+              <div>
+                <div class="field-label">保険種別</div>
+                <input id="p_insuranceType" type="text" placeholder="例）国保、高齢者医療 など" />
+              </div>
+              <div>
+                <div class="field-label">保険者番号・記号等</div>
+                <input id="p_insuranceNo" type="text" />
+              </div>
+              <div>
+                <div class="field-label">要介護度</div>
+                <input id="p_careLevel" type="text" placeholder="要支援1〜要介護5 など" />
+              </div>
+              <div>
+                <div class="field-label">主な在宅サービス</div>
+                <input id="p_services" type="text" placeholder="訪問看護、訪問介護、デイ等" />
+              </div>
+            </div>
+
+            <div class="patient-section-title">医療情報</div>
+            <div class="patient-form-grid">
+              <div>
+                <div class="field-label">主病名</div>
+                <input id="p_primaryDx" type="text" placeholder="例）心不全、COPD など" />
+              </div>
+              <div>
+                <div class="field-label">併存疾患</div>
+                <input id="p_subDx" type="text" placeholder="糖尿病、高血圧症など" />
+              </div>
+              <div>
+                <div class="field-label">アレルギー</div>
+                <input id="p_allergies" type="text" placeholder="薬剤・食品・ラテックスなど" />
+              </div>
+              <div>
+                <div class="field-label">既往歴</div>
+                <input id="p_pastHistory" type="text" placeholder="脳梗塞、骨折歴 など" />
+              </div>
+              <div style="grid-column: 1 / -1;">
+                <div class="field-label">内服薬・処方</div>
+                <textarea id="p_meds" placeholder="主な内服薬・投与方法など"></textarea>
+              </div>
+              <div>
+                <div class="field-label">主治医</div>
+                <input id="p_physician" type="text" placeholder="◯◯医院 ◯◯医師" />
+              </div>
+              <div>
+                <div class="field-label">主たる医療機関</div>
+                <input id="p_hospital" type="text" placeholder="通院先病院名など" />
+              </div>
+              <div>
+                <div class="field-label">ケアマネジャー</div>
+                <input id="p_careManager" type="text" placeholder="事業所名・担当者名など" />
+              </div>
+            </div>
+
+            <div class="patient-section-title">備考</div>
+            <div>
+              <textarea id="p_notes" placeholder="生活上の留意点、本人の希望、ACP など"></textarea>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
+              <button class="btn btn-outline" id="btnPatientReset">入力クリア</button>
+              <button class="btn btn-primary" id="btnPatientSave">利用者情報を保存</button>
+            </div>
+
+            <div class="patient-section-title">この利用者の記録履歴（SOAP＋看護診断 抜粋）</div>
+            <div class="patient-history" id="patientHistory">
+              <div style="font-size:12px; color:#6b7280;">
+                表示中の利用者に紐づく記録はまだありません。
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- スタッフ状況＋マップ -->
+     <section id="section-staff" class="section">
+  <!-- スタッフ状況パネル -->
+  <div class="panel">
+    <div class="panel-title">
+      <span>スタッフ状況（離職リスクの目安）</span>
+      <span style="font-size: 11px; color: #6b7280;">
+        ※管理者のみ閲覧想定・評価ではなく「ケアのきっかけ」として利用
+      </span>
+    </div>
+    <div id="staffList"></div>
+    <div class="staff-note">
+      色分けは「最近の業務負担や自己申告の組み合わせ」に基づく目安です。<br>
+      個人の評価や査定ではなく、面談や配置調整・支援のきっかけとして使用してください。
+    </div>
+  </div>
+
+  <!-- ★ここが③：算定チェック＆レセプトAIパネル -->
+  <div class="panel" style="margin-top:16px;">
+    <div class="panel-title">
+      <span>算定チェック＆レセプトAI（デモ）</span>
+      <span style="font-size:11px; color:#6b7280;">
+        最新の訪問スケジュールと記録から、算定候補とミスの可能性をAIが解析します。
+      </span>
+    </div>
+
+    <div class="billing-summary" id="billingCheckSummary">
+      「算定チェックを実行」ボタンを押すと、この日の訪問全体についてAIが解析します。
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin:6px 0;">
+      <button class="btn btn-outline" id="btnBillingExplain" style="font-size:11px; padding:4px 10px;">
+        職員教育モード
+      </button>
+      <button class="btn btn-primary" id="btnBillingRun" style="font-size:11px; padding:4px 10px;">
+        算定チェックを実行
+      </button>
+    </div>
+
+    <div class="billing-list" id="billingCheckList">
+      まだ算定チェックは行われていません。
+    </div>
+
+    <div class="billing-summary" id="billingExplainBox" style="margin-top:8px; display:none;">
+      ここにAIによる算定の解説（教育モード）が表示されます。
+    </div>
+  </div>
+
+  <!-- 急変マップパネル -->
+  <div class="panel map-wrapper">
+    <div class="panel-title">
+      <span>急変時の看護師配置（デモマップ）</span>
+      <span style="font-size:11px; color:#6b7280;">
+        看護師と利用者の位置関係をざっくり確認し、最も近い看護師を把握します。
+      </span>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:4px;">
+      <span style="font-size:12px;">急変が想定される利用者:</span>
+      <select id="emergencySelect" style="max-width:220px; font-size:12px;">
+      </select>
+      <button class="btn btn-outline" id="btnCalcNearest" style="padding:4px 10px; font-size:11px;">
+        一番近い看護師を表示
+      </button>
+    </div>
+    <div class="map-container" id="mapContainer">
+      <div class="map-grid"></div>
+    </div>
+    <div class="map-legend" id="mapInfo">
+      デモ用の位置情報です。実運用ではスマートフォン等の位置情報と連携して表示します。
+    </div>
+  </div>
+</section>
+    </main>
+  </div>
+
+  <script>
+    
+    const visits = [
+      {
+        id: 1,
+        time: "09:00",
+        name: "田中 太郎 様",
+        shortName: "田中 太郎",
+        type: "介護",
+        typeKey: "care",
+        priority: "注意",
+        priorityKey: "mid",
+        prioritySymbol: "▲",
+        diagnosis: "糖尿病（インスリン自己注射）",
+        addr: "新宿区西落合4丁目（サービス付き高齢者向け住宅）"
+      },
+      {
+        id: 2,
+        time: "10:30",
+        name: "佐藤 花子 様",
+        shortName: "佐藤 花子",
+        type: "医療",
+        typeKey: "med",
+        priority: "緊急",
+        priorityKey: "high",
+        prioritySymbol: "★",
+        diagnosis: "心不全増悪疑い・在宅酸素使用中",
+        addr: "港区南青山3丁目（マンション・独居）"
+      },
+      {
+        id: 3,
+        time: "14:00",
+        name: "鈴木 一郎 様",
+        shortName: "鈴木 一郎",
+        type: "介護",
+        typeKey: "care",
+        priority: "通常",
+        priorityKey: "low",
+        prioritySymbol: "●",
+        diagnosis: "脳梗塞後遺症（左片麻痺）・ADL介助",
+        addr: "世田谷区桜丘2丁目（ご家族同居）"
+      }
+    ];
+
+    const vitalsData = {
+      "田中 太郎": [
+        { t: "7日前",    hr: 82, sys: 138, dia: 84, rr: 18, spo2: 96, weight: 62.4 },
+        { t: "6日前",    hr: 80, sys: 136, dia: 82, rr: 17, spo2: 97, weight: 62.3 },
+        { t: "5日前",    hr: 84, sys: 140, dia: 86, rr: 19, spo2: 96, weight: 62.5 },
+        { t: "4日前",    hr: 86, sys: 142, dia: 88, rr: 20, spo2: 95, weight: 62.7 },
+        { t: "3日前",    hr: 88, sys: 144, dia: 90, rr: 20, spo2: 95, weight: 62.8 },
+        { t: "2日前",    hr: 90, sys: 146, dia: 92, rr: 21, spo2: 94, weight: 63.0 },
+        { t: "昨日",     hr: 92, sys: 148, dia: 94, rr: 22, spo2: 94, weight: 63.2 },
+        { t: "今朝",     hr: 94, sys: 150, dia: 95, rr: 22, spo2: 93, weight: 63.4 },
+        { t: "訪問直前", hr: 96, sys: 152, dia: 96, rr: 23, spo2: 93, weight: 63.5 },
+        { t: "現在",     hr: 98, sys: 154, dia: 98, rr: 24, spo2: 92, weight: 63.6 }
+      ],
+      "佐藤 花子": [
+        { t: "7日前",    hr: 78, sys: 128, dia: 78, rr: 16, spo2: 97, weight: 48.2 },
+        { t: "6日前",    hr: 76, sys: 126, dia: 76, rr: 16, spo2: 97, weight: 48.1 },
+        { t: "5日前",    hr: 80, sys: 130, dia: 80, rr: 17, spo2: 97, weight: 48.1 },
+        { t: "4日前",    hr: 82, sys: 132, dia: 82, rr: 17, spo2: 96, weight: 48.2 },
+        { t: "3日前",    hr: 84, sys: 134, dia: 84, rr: 18, spo2: 96, weight: 48.3 },
+        { t: "2日前",    hr: 86, sys: 136, dia: 86, rr: 18, spo2: 95, weight: 48.4 },
+        { t: "昨日",     hr: 88, sys: 138, dia: 88, rr: 18, spo2: 95, weight: 48.6 },
+        { t: "今朝",     hr: 90, sys: 140, dia: 90, rr: 19, spo2: 94, weight: 48.8 },
+        { t: "訪問直前", hr: 92, sys: 142, dia: 92, rr: 20, spo2: 94, weight: 49.0 },
+        { t: "現在",     hr: 94, sys: 144, dia: 94, rr: 20, spo2: 93, weight: 49.2 }
+      ],
+      "鈴木 一郎": [
+        { t: "7日前",    hr: 72, sys: 122, dia: 76, rr: 16, spo2: 98, weight: 55.0 },
+        { t: "6日前",    hr: 70, sys: 120, dia: 74, rr: 15, spo2: 98, weight: 55.0 },
+        { t: "5日前",    hr: 74, sys: 124, dia: 78, rr: 16, spo2: 98, weight: 55.1 },
+        { t: "4日前",    hr: 76, sys: 126, dia: 80, rr: 16, spo2: 97, weight: 55.1 },
+        { t: "3日前",    hr: 78, sys: 128, dia: 82, rr: 17, spo2: 97, weight: 55.2 },
+        { t: "2日前",    hr: 80, sys: 130, dia: 84, rr: 17, spo2: 97, weight: 55.3 },
+        { t: "昨日",     hr: 82, sys: 132, dia: 86, rr: 18, spo2: 96, weight: 55.4 },
+        { t: "今朝",     hr: 84, sys: 134, dia: 88, rr: 18, spo2: 96, weight: 55.5 },
+        { t: "訪問直前", hr: 86, sys: 136, dia: 89, rr: 18, spo2: 95, weight: 55.5 },
+        { t: "現在",     hr: 88, sys: 138, dia: 90, rr: 19, spo2: 95, weight: 55.6 }
+      ]
+    };
+
+    const staffListData = [
+      {
+        name: "山田 看護師",
+        role: "常勤",
+        avgVisits: 7.2,
+        nightRecords: 3,
+        stress: 4,
+        thinkingLeave: true,
+        risk: "high",
+        comment: "ここ2週間ほど訪問件数と緊急対応が多く、深夜の記録も増加傾向。早めの面談や負担調整の検討が望ましい。"
+      },
+      {
+        name: "佐藤 看護師",
+        role: "常勤",
+        avgVisits: 5.5,
+        nightRecords: 1,
+        stress: 3,
+        thinkingLeave: false,
+        risk: "mid",
+        comment: "やや負担感はあるものの、本人は継続意欲あり。勤務の波に留意しつつ、フォローを継続。"
+      },
+      {
+        name: "鈴木 看護師",
+        role: "非常勤",
+        avgVisits: 3.0,
+        nightRecords: 0,
+        stress: 2,
+        thinkingLeave: false,
+        risk: "low",
+        comment: "現状は業務量・自己申告ともに安定。必要に応じてスポットでの支援要員として活用可能。"
+      }
+    ];
+
+    const nurseLocations = [
+      { id: "n1", name: "山田 看護師", x: 25, y: 60 },
+      { id: "n2", name: "佐藤 看護師", x: 55, y: 30 },
+      { id: "n3", name: "鈴木 看護師", x: 75, y: 70 }
+    ];
+
+    const emergencyPatients = [
+      { id: "em1", shortName: "田中 太郎", label: "田中 太郎（西落合）", x: 20, y: 40 },
+      { id: "em2", shortName: "佐藤 花子", label: "佐藤 花子（南青山）", x: 65, y: 25 },
+      { id: "em3", shortName: "鈴木 一郎", label: "鈴木 一郎（世田谷）", x: 50, y: 75 }
+    ];
+
+    const LS_KEY_RECORDS = "carenexus_records_v1_dx";
+    const LS_KEY_PATIENTS = "carenexus_patients_v1_dx";
+    const LS_KEY_CHATS = "carenexus_chats_v1_dx";
+
+    const todayLabel = document.getElementById("todayLabel");
+    const visitList = document.getElementById("visitList");
+    const tabs = document.querySelectorAll(".tab");
+    const sectionList = document.getElementById("section-list");
+    const sectionVitals = document.getElementById("section-vitals");
+    const sectionRecord = document.getElementById("section-record");
+    const sectionPatient = document.getElementById("section-patient");
+    const sectionStaff = document.getElementById("section-staff");
+    const recordTitle = document.getElementById("recordTitle");
+    const freeText = document.getElementById("freeText");
+    const soapS = document.getElementById("soapS");
+    const soapO = document.getElementById("soapO");
+    const soapA = document.getElementById("soapA");
+    const soapP = document.getElementById("soapP");
+    const soapDx = document.getElementById("soapDx");
+    const familyReportText = document.getElementById("familyReportText");
+    const recordListDiv = document.getElementById("recordList");
+    const staffListDiv = document.getElementById("staffList");
+    const adminTab = document.querySelector('.tab[data-tab="staff"]');
+    const adminBtn = document.getElementById("adminBtn");
+    // 多職種チャット関連
+    const chatMessageList = document.getElementById("chatMessageList");
+    const chatHeaderLine   = document.getElementById("chatHeaderLine");
+    const chatSenderRole   = document.getElementById("chatSenderRole");
+    const chatInput        = document.getElementById("chatInput");
+    const btnChatSend      = document.getElementById("btnChatSend");
+    const btnChatTemplate  = document.getElementById("btnChatTemplate");
+
+    const vitalTitle = document.getElementById("vitalTitle");
+    const vitalStatusBadge = document.getElementById("vitalStatusBadge");
+    const fallStatusBadge = document.getElementById("fallStatusBadge");
+    const vitalSummary = document.getElementById("vitalSummary");
+    const vitalCharts = document.getElementById("vitalCharts");
+    const vitalTableWrapper = document.getElementById("vitalTableWrapper");
+    const vitalTableBody = document.getElementById("vitalTableBody");
+    const vitalLegend = document.getElementById("vitalLegend");
+
+    const patientListDiv = document.getElementById("patientList");
+    const patientFormTitle = document.getElementById("patientFormTitle");
+    const patientHistoryDiv = document.getElementById("patientHistory");
+
+    const p_name = document.getElementById("p_name");
+    const p_kana = document.getElementById("p_kana");
+    const p_sex = document.getElementById("p_sex");
+    const p_birth = document.getElementById("p_birth");
+    const p_postal = document.getElementById("p_postal");
+    const p_address = document.getElementById("p_address");
+    const p_phone = document.getElementById("p_phone");
+    const p_emergency = document.getElementById("p_emergency");
+    const p_family = document.getElementById("p_family");
+    const p_insuranceType = document.getElementById("p_insuranceType");
+    const p_insuranceNo = document.getElementById("p_insuranceNo");
+    const p_careLevel = document.getElementById("p_careLevel");
+    const p_services = document.getElementById("p_services");
+    const p_primaryDx = document.getElementById("p_primaryDx");
+    const p_subDx = document.getElementById("p_subDx");
+    const p_allergies = document.getElementById("p_allergies");
+    const p_pastHistory = document.getElementById("p_pastHistory");
+    const p_meds = document.getElementById("p_meds");
+    const p_physician = document.getElementById("p_physician");
+    const p_hospital = document.getElementById("p_hospital");
+    const p_careManager = document.getElementById("p_careManager");
+    const p_notes = document.getElementById("p_notes");
+
+    const btnNewPatient = document.getElementById("btnNewPatient");
+    const btnPatientSave = document.getElementById("btnPatientSave");
+    const btnPatientReset = document.getElementById("btnPatientReset");
+
+    const voiceBtn = document.getElementById("voiceInputBtn");
+    const voiceStatus = document.getElementById("voiceStatus");
+
+    const emergencySelect = document.getElementById("emergencySelect");
+    const btnCalcNearest = document.getElementById("btnCalcNearest");
+    const mapContainer = document.getElementById("mapContainer");
+    const mapInfo = document.getElementById("mapInfo");
+        // ====== 算定チェックパネル用の要素 ======
+const billingCheckSummary = document.getElementById("billingCheckSummary");
+const billingCheckList = document.getElementById("billingCheckList");
+const billingExplainBox = document.getElementById("billingExplainBox");
+const btnBillingRun = document.getElementById("btnBillingRun");
+const btnBillingExplain = document.getElementById("btnBillingExplain");
+
+
+
+    let currentVisit = null;
+    let adminMode = false;
+    let selectedPatientId = null;
+    let currentVitalsName = null;
+
+    function formatToday() {
+      const d = new Date();
+      const youbi = ["日","月","火","水","木","金","土"][d.getDay()];
+      return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}（${youbi}）`;
+    }
+
+    function classifyVital(v) {
+      let score = 0;
+      if (v.hr < 50 || v.hr > 120) score += 2;
+      else if ((v.hr >= 50 && v.hr < 60) || (v.hr > 100 && v.hr <= 120)) score += 1;
+
+      if (v.sys >= 160 || v.sys < 90 || v.dia >= 100 || v.dia < 50) score += 2;
+      else if (v.sys >= 140 || v.dia >= 90) score += 1;
+
+      if (v.rr < 10 || v.rr > 26) score += 2;
+      else if ((v.rr >= 10 && v.rr < 12) || (v.rr > 20 && v.rr <= 26)) score += 1;
+
+      if (v.spo2 <= 92) score += 2;
+      else if (v.spo2 <= 95) score += 1;
+
+      if (score >= 3) return "alert";
+      if (score >= 1) return "caution";
+      return "normal";
+    }
+
+    function evaluateOverallStatus(data) {
+      if (!data || !data.length) return "normal";
+      const last = data[data.length - 1];
+      const cls = classifyVital(last);
+      const first = data[0];
+      const diffW = last.weight - first.weight;
+      if (diffW >= 2) {
+        if (cls === "normal") return "caution";
+        if (cls === "caution") return "alert";
+      }
+      return cls;
+    }
+
+    function statusLabel(status) {
+      if (status === "alert") return "要注意（赤）";
+      if (status === "caution") return "注意（黄）";
+      return "正常（緑）";
+    }
+
+    function evaluateFallRisk(visit) {
+      const text = (visit.diagnosis || "") + " " + (visit.addr || "");
+      const lowKey = ["独居", "高齢"];
+      const midKey = ["ふらつき", "転倒", "歩行", "麻痺"];
+      const highKey = ["脳梗塞", "骨折", "片麻痺"];
+      let score = 0;
+      highKey.forEach(k => { if (text.includes(k)) score += 2; });
+      midKey.forEach(k => { if (text.includes(k)) score += 1; });
+      lowKey.forEach(k => { if (text.includes(k)) score += 0.5; });
+      if (score >= 2.5) return "high";
+      if (score >= 1) return "mid";
+      return "low";
+    }
+
+    function renderVisitList() {
+      todayLabel.textContent = formatToday();
+      visitList.innerHTML = "";
+      visits.forEach(v => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const header = document.createElement("div");
+        header.className = "card-header";
+
+        const left = document.createElement("div");
+        const time = document.createElement("div");
+        time.className = "time";
+        time.textContent = v.time;
+        const priority = document.createElement("div");
+        priority.className = "priority " +
+          (v.priorityKey === "high" ? "priority-high" :
+           v.priorityKey === "mid" ? "priority-mid" :
+           "priority-low");
+        priority.textContent = `${v.prioritySymbol} ${v.priority}`;
+        left.appendChild(time);
+        left.appendChild(priority);
+
+        const right = document.createElement("div");
+        right.style.textAlign = "right";
+        const nameLine = document.createElement("div");
+        nameLine.className = "name-line";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = v.name;
+        const typeTag = document.createElement("span");
+        typeTag.className = "tag-type " +
+          (v.typeKey === "med" ? "tag-type-med" : "tag-type-care");
+        typeTag.textContent = v.type;
+        nameLine.appendChild(nameSpan);
+        nameLine.appendChild(typeTag);
+
+        const diag = document.createElement("div");
+        diag.className = "diag";
+        diag.textContent = v.diagnosis;
+
+        const addr = document.createElement("div");
+        addr.className = "addr";
+        addr.textContent = v.addr;
+
+        const riskLine = document.createElement("div");
+        riskLine.className = "visit-risk-line";
+
+        const data = vitalsData[v.shortName];
+        const overall = data ? evaluateOverallStatus(data) : "normal";
+        const fall = evaluateFallRisk(v);
+
+        const acuteSpan = document.createElement("span");
+        acuteSpan.className =
+          "risk-pill-mini " +
+          (overall === "alert" ? "risk-acute-alert" :
+           overall === "caution" ? "risk-acute-caution" :
+           "risk-acute-normal");
+        acuteSpan.textContent = `急変リスク: ${statusLabel(overall)}`;
+
+        const fallSpan = document.createElement("span");
+        fallSpan.className =
+          "risk-pill-mini " +
+          (fall === "high" ? "risk-fall-high" :
+           fall === "mid" ? "risk-fall-mid" :
+           "risk-fall-low");
+        fallSpan.textContent =
+          "転倒リスク: " +
+          (fall === "high" ? "高め" : fall === "mid" ? "やや高め" : "比較的低め");
+
+        riskLine.appendChild(acuteSpan);
+        riskLine.appendChild(fallSpan);
+
+        right.appendChild(nameLine);
+        right.appendChild(diag);
+        right.appendChild(addr);
+        right.appendChild(riskLine);
+
+        header.appendChild(left);
+        header.appendChild(right);
+
+        const footer = document.createElement("div");
+        footer.className = "card-footer";
+
+        const btnVitals = document.createElement("button");
+        btnVitals.className = "btn btn-outline";
+        btnVitals.textContent = "バイタルデータを閲覧する";
+        btnVitals.onclick = () => openVitalsForVisit(v);
+
+        const btnInfo = document.createElement("button");
+        btnInfo.className = "btn btn-outline";
+        btnInfo.textContent = "利用者情報を閲覧する";
+        btnInfo.onclick = () => openPatientFromVisit(v);
+
+        const btnRecord = document.createElement("button");
+        btnRecord.className = "btn btn-primary";
+        btnRecord.textContent = "この利用者の記録を入力";
+        btnRecord.onclick = () => openRecordFor(v);
+
+        footer.appendChild(btnVitals);
+        footer.appendChild(btnInfo);
+        footer.appendChild(btnRecord);
+
+        card.appendChild(header);
+        card.appendChild(footer);
+
+        visitList.appendChild(card);
+      });
+    }
+
+    function setActiveTab(tabKey) {
+      tabs.forEach(t => {
+        const active = t.dataset.tab === tabKey;
+        t.classList.toggle("active", active);
+      });
+      sectionList.classList.toggle("active", tabKey === "list");
+      sectionVitals.classList.toggle("active", tabKey === "vitals");
+      sectionRecord.classList.toggle("active", tabKey === "record");
+      sectionPatient.classList.toggle("active", tabKey === "patient");
+      sectionStaff.classList.toggle("active", tabKey === "staff");
+
+      if (tabKey === "vitals") {
+        if (!currentVitalsName) {
+          currentVitalsName = visits[0]?.shortName || null;
+        }
+        renderVitalsForCurrent();
+      }
+    }
+
+    tabs.forEach(t => {
+      t.addEventListener("click", () => {
+        const key = t.dataset.tab;
+        if (key === "staff" && !adminMode) {
+          alert("スタッフ状況は管理者のみ閲覧できます。\nヘッダーの「管理者モード」から認証してください。");
+          return;
+        }
+        setActiveTab(key);
+      });
+    });
+
+    function openRecordFor(v) {
+      currentVisit = v;
+      recordTitle.textContent = `記録対象：${v.name} / ${v.time}訪問（${v.type}）`;
+      renderChatList();
+      setActiveTab("record");
+    }
+
+    function openPatientFromVisit(v) {
+      setActiveTab("patient");
+      const patients = loadPatients();
+      const shortName = v.shortName || v.name.replace(" 様", "");
+      const patient = patients.find(p => p.name === shortName);
+      if (patient) {
+        fillPatientForm(patient);
+      } else {
+        renderPatientList();
+        alert("この利用者の詳細情報はまだ登録されていません。\n「新規追加」から登録するか、記録を保存すると自動で作成されます。");
+      }
+    }
+
+    function openVitalsForVisit(v) {
+      const shortName = v.shortName || v.name.replace(" 様", "");
+      currentVitalsName = shortName;
+      setActiveTab("vitals");
+    }
+
+    const apiStatusText = document.getElementById("apiStatusText");
+    document.getElementById("apiCheckBtn").addEventListener("click", () => {
+      fetch("http://localhost:8000/healthz")
+        .then(r => r.json())
+        .then(j => {
+          apiStatusText.textContent = `API Status: ${j.status} (${j.message})`;
+        })
+        .catch(e => {
+          apiStatusText.textContent = "API 接続エラー: " + e;
+        });
+    });
+
+    function suggestNursingDiagnosis(freeText, visit) {
+      const text = (freeText || "").toLowerCase();
+      const diag = (visit && visit.diagnosis) ? visit.diagnosis : "";
+      const nameKey = visit ? (visit.shortName || visit.name.replace(" 様", "")) : null;
+      const vitals = nameKey ? vitalsData[nameKey] : null;
+      const candidates = [];
+
+      function hasWord(words) {
+        return words.some(w => freeText.includes(w) || diag.includes(w));
+      }
+
+      if (hasWord(["息苦", "呼吸", "SpO2", "心不全", "肺炎", "酸素"])) {
+        candidates.push("ガス交換障害（Impaired Gas Exchange）");
+        candidates.push("非効果的な呼吸パターン（Ineffective Breathing Pattern）");
+      }
+      if (hasWord(["糖尿病", "血糖", "インスリン", "低血糖", "高血糖"])) {
+        candidates.push("非効果的健康管理（血糖コントロール）（Ineffective Health Management）");
+      }
+      if (hasWord(["転倒", "ふらつき", "歩行", "麻痺", "脳梗塞", "骨折"])) {
+        candidates.push("転倒リスク（Risk for Falls）");
+      }
+      if (hasWord(["痛み", "疼痛", "いたい"])) {
+        candidates.push("急性疼痛（Acute Pain）");
+      }
+      if (vitals && vitals.length >= 2) {
+        const first = vitals[0];
+        const last = vitals[vitals.length - 1];
+        const diffW = last.weight - first.weight;
+        if (diffW >= 2 || hasWord(["浮腫", "むくみ"])) {
+          candidates.push("体液過剰（Excess Fluid Volume）");
+        }
+      }
+      if (hasWord(["疲れやす", "だるさ", "倦怠感", "息切れ", "歩くとつらい"])) {
+        candidates.push("活動耐性低下（Activity Intolerance）");
+      }
+
+      if (candidates.length === 0) {
+        return "看護診断の例：転倒リスク／活動耐性低下／非効果的健康管理 など。自由記載とバイタルをもとに看護師が選択・修正してください。";
+      }
+      const uniq = [...new Set(candidates)];
+      return "候補：" + uniq.slice(0, 3).join(" ／ ");
+    }
+
+    document.getElementById("btnGenerate").addEventListener("click", async () => {
+  const txt = freeText.value.trim();
+  if (!txt) {
+    alert("まず自由記載メモに内容を入力してください。");
+    return;
+  }
+
+  // 現在選択中の訪問情報（なければ仮の値）
+  const visitName =
+    currentVisit ? (currentVisit.shortName || currentVisit.name) : "利用者";
+  const visitType = currentVisit ? currentVisit.type : "";
+
+  const payload = {
+    free_text: txt,
+    visit_name: visitName,
+    visit_type: visitType,
+  };
+
+  try {
+    const resp = await fetch("http://localhost:8000/analyze-soap", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!resp.ok) {
+      throw new Error("API error: " + resp.status);
+    }
+
+    const data = await resp.json();
+    renderBillingResult(data);
+
+    // バックエンドから返ってきた内容を画面に反映
+    soapS.textContent = data.soapS;
+    soapO.textContent = data.soapO;
+    soapA.textContent = data.soapA;
+    soapP.textContent = data.soapP;
+    soapDx.textContent = data.soapDx;
+
+    if (data.medSummaryFamily) {
+      familyReportText.textContent =
+        `${visitName}さまの最近のご様子についてお伝えします。\n\n` +
+        data.medSummaryFamily;
+    }
+  } catch (e) {
+    console.error(e);
+    alert("AI 記録生成に失敗しました: " + e.message);
+  }
+});
+    document.getElementById("btnResetSoap").addEventListener("click", () => {
+      freeText.value = "";
+      soapS.textContent = "自由記載から主観情報を要約します。";
+      soapO.textContent = "バイタルや観察所見がここにまとまります。";
+      soapA.textContent = "全体から看護師としての判断が整理されます。";
+      soapP.textContent = "次回訪問や今後の計画・指導内容を提案します。";
+      soapDx.textContent = "NANDA-I を参考にした看護診断案が表示されます。";
+      familyReportText.textContent = "ここに家族向けの説明文が表示されます。";
+    });
+
+    function generateFamilyReport() {
+      const name = currentVisit ? currentVisit.shortName || currentVisit.name.replace(" 様","") : "ご本人";
+      const shortName = currentVisit ? (currentVisit.shortName || currentVisit.name.replace(" 様","")) : null;
+      const data = shortName ? vitalsData[shortName] : null;
+      const overall = data ? evaluateOverallStatus(data) : "normal";
+      const last = data ? data[data.length - 1] : null;
+
+      let riskSentence = "";
+      if (!data || !last) {
+        riskSentence = "最近の体調の変化について大きな異常は見られていません。";
+      } else if (overall === "alert") {
+        riskSentence = "ここ数日の体調変化から、息苦しさや体重の増加などに注意が必要な状態です。今後もこまめな観察が必要です。";
+      } else if (overall === "caution") {
+        riskSentence = "ここ数日の体調はおおむね安定していますが、少し負担がかかりやすい状態です。水分・塩分や日々の体重の変化に気をつけて見守っています。";
+      } else {
+        riskSentence = "ここ数日の体調は大きく変わっておらず、比較的落ち着いた状態です。今の生活を続けながら、普段通りの見守りをしています。";
+      }
+
+      let vitalSentence = "";
+      if (last) {
+        vitalSentence =
+          `直近の測定では、脈拍は${last.hr}回／分、血圧は${last.sys}/${last.dia}mmHg、呼吸数は${last.rr}回／分、酸素の値（SpO₂）は${last.spo2}%、体重は約${last.weight.toFixed(1)}kgでした。`;
+      }
+
+      const dxText = soapDx.textContent || "";
+      let dxSentence = "";
+      if (dxText.includes("転倒リスク")) {
+        dxSentence += "足元のふらつきや転びやすさにも注意しており、歩くときの付き添いや環境調整を意識して支援しています。";
+      }
+      if (dxText.includes("体液過剰")) {
+        dxSentence += (dxSentence ? " " : "") + "むくみや急な体重増加がないかを確認し、必要に応じて主治医と相談できるよう準備しています。";
+      }
+      if (!dxSentence) {
+        dxSentence = "今のところ、在宅での生活を続けながら、体調の変化があればすぐに気づけるように見守っています。";
+      }
+
+      const planSentence =
+        "ご家族には、息苦しさが強くなったり、急な体重増加やむくみが出た場合には、早めに訪問看護や主治医へご連絡いただくようお伝えしています。";
+
+      const text =
+`${name}さまの最近のご様子についてお伝えします。
+
+${riskSentence}
+${vitalSentence}
+${dxSentence}
+${planSentence}`;
+
+      familyReportText.textContent = text;
+    }
+
+    document.getElementById("btnFamilyReport").addEventListener("click", () => {
+      if (!currentVisit) {
+        alert("まず「本日の訪問」から利用者を選択し、記録画面を開いてください。");
+        return;
+      }
+      generateFamilyReport();
+    });
+
+    function loadRecords() {
+      try {
+        const raw = localStorage.getItem(LS_KEY_RECORDS);
+        if (!raw) return [];
+        return JSON.parse(raw);
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
+    }
+
+    function saveRecords(records) {
+      localStorage.setItem(LS_KEY_RECORDS, JSON.stringify(records));
+    }
+
+    function renderRecordList() {
+      const records = loadRecords();
+      if (!records.length) {
+        recordListDiv.textContent = "まだ記録はありません。";
+        return;
+      }
+      recordListDiv.innerHTML = "";
+      records.slice().reverse().forEach(r => {
+        const div = document.createElement("div");
+        div.className = "record-item";
+
+        const meta = document.createElement("div");
+        meta.className = "record-meta";
+        meta.textContent = `${r.dateTime} / ${r.visitName} / ${r.visitTime}訪問 / ${r.visitType}`;
+
+        const body = document.createElement("div");
+        body.className = "record-body";
+        body.innerHTML =
+          `<div>自由記載：${r.freeText ? r.freeText.slice(0, 40) + (r.freeText.length > 40 ? "…" : "") : "（空）"}</div>` +
+          `<div>S: ${r.soapS}</div>` +
+          `<div>O: ${r.soapO}</div>` +
+          `<div>A: ${r.soapA}</div>` +
+          `<div>P: ${r.soapP}</div>` +
+          `<div>看護診断: ${r.soapDx || "（未入力）"}</div>`;
+
+        div.appendChild(meta);
+        div.appendChild(body);
+        recordListDiv.appendChild(div);
+      });
+    }
+        // ===== 多職種チャット（ローカル保存デモ） =====
+    function loadChats() {
+      try {
+        const raw = localStorage.getItem(LS_KEY_CHATS);
+        if (!raw) return [];
+        return JSON.parse(raw);
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
+    }
+
+    function saveChats(chats) {
+      localStorage.setItem(LS_KEY_CHATS, JSON.stringify(chats));
+    }
+
+    function roleClass(role) {
+      if (role === "看護師") return "chat-role-pill chat-role-nurse";
+      if (role === "主治医") return "chat-role-pill chat-role-doctor";
+      if (role === "薬剤師") return "chat-role-pill chat-role-pharmacist";
+      if (role === "ケアマネジャー") return "chat-role-pill chat-role-caremanager";
+      return "chat-role-pill";
+    }
+
+    function renderChatList() {
+      if (!chatMessageList || !chatHeaderLine) return;
+
+      if (!currentVisit) {
+        chatHeaderLine.textContent =
+          "記録対象の利用者が未選択です。「本日の訪問」から利用者を選んでください。";
+        chatMessageList.innerHTML =
+          '<div class="chat-empty">まだメッセージはありません。</div>';
+        return;
+      }
+
+      chatHeaderLine.textContent =
+        `対象：${currentVisit.name} / ${currentVisit.time}訪問（${currentVisit.type}）に関するやり取り`;
+
+      const all = loadChats();
+      const chats = all.filter(c => c.visitId === currentVisit.id);
+
+      if (!chats.length) {
+        chatMessageList.innerHTML =
+          '<div class="chat-empty">この利用者に関するメッセージはまだありません。</div>';
+        return;
+      }
+
+      chatMessageList.innerHTML = "";
+      chats.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "chat-message";
+
+        const meta = document.createElement("div");
+        meta.className = "chat-meta";
+
+        const left = document.createElement("div");
+        const pill = document.createElement("span");
+        pill.className = roleClass(c.role);
+        pill.textContent = c.role;
+        left.appendChild(pill);
+
+        const right = document.createElement("div");
+        right.textContent = c.dateTime || "";
+
+        meta.appendChild(left);
+        meta.appendChild(right);
+
+        const body = document.createElement("div");
+        body.className = "chat-body";
+        body.textContent = c.text;
+
+        div.appendChild(meta);
+        div.appendChild(body);
+        chatMessageList.appendChild(div);
+      });
+
+      chatMessageList.scrollTop = chatMessageList.scrollHeight;
+    }
+
+    if (btnChatSend) {
+      btnChatSend.addEventListener("click", () => {
+        if (!currentVisit) {
+          alert("まず「本日の訪問」から利用者を選択し、記録画面を開いてください。");
+          return;
+        }
+        const txt = chatInput.value.trim();
+        if (!txt) {
+          alert("メッセージ内容を入力してください。");
+          return;
+        }
+
+        const role = chatSenderRole.value || "看護師";
+        const now = new Date();
+        const dtStr =
+          `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ` +
+          `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+
+        const chats = loadChats();
+        chats.push({
+          id: "c_" + Date.now().toString(36),
+          visitId: currentVisit.id,
+          visitName: currentVisit.name,
+          role,
+          text: txt,
+          dateTime: dtStr
+        });
+        saveChats(chats);
+        chatInput.value = "";
+        renderChatList();
+      });
+    }
+
+    if (btnChatTemplate) {
+      const templates = [
+        "最近の夜間の息苦しさが増えているため、利尿薬の調整についてご相談させてください。",
+        "内服薬の残数が少なくなっているため、次回処方内容と受診タイミングについて確認をお願いできますでしょうか。",
+        "ご家族より、転倒への不安が強くなっているとのお話がありました。住宅改修や福祉用具の活用について一度ご相談できればと思います。"
+      ];
+
+      btnChatTemplate.addEventListener("click", () => {
+        const msg =
+          "挿入する定型文を番号で選んでください：\n" +
+          "1: 夜間の息苦しさと利尿薬の調整\n" +
+          "2: 内服薬残数と処方内容の相談\n" +
+          "3: 転倒不安と住宅改修の相談";
+        const choice = prompt(msg);
+        if (!choice) return;
+        const idx = parseInt(choice, 10) - 1;
+        if (isNaN(idx) || idx < 0 || idx >= templates.length) return;
+
+        const t = templates[idx];
+        chatInput.value = chatInput.value
+          ? chatInput.value + "\n" + t
+          : t;
+      });
+    }
+
+
+    function loadPatients() {
+      try {
+        const raw = localStorage.getItem(LS_KEY_PATIENTS);
+        if (!raw) return [];
+        return JSON.parse(raw);
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
+    }
+
+    function savePatients(patients) {
+      localStorage.setItem(LS_KEY_PATIENTS, JSON.stringify(patients));
+    }
+
+    function generatePatientId() {
+      return "p_" + Date.now().toString(36) + "_" + Math.floor(Math.random() * 1e6).toString(36);
+    }
+
+    function clearPatientForm() {
+      selectedPatientId = null;
+      patientFormTitle.textContent = "利用者詳細";
+      p_name.value = "";
+      p_kana.value = "";
+      p_sex.value = "";
+      p_birth.value = "";
+      p_postal.value = "";
+      p_address.value = "";
+      p_phone.value = "";
+      p_emergency.value = "";
+      p_family.value = "";
+      p_insuranceType.value = "";
+      p_insuranceNo.value = "";
+      p_careLevel.value = "";
+      p_services.value = "";
+      p_primaryDx.value = "";
+      p_subDx.value = "";
+      p_allergies.value = "";
+      p_pastHistory.value = "";
+      p_meds.value = "";
+      p_physician.value = "";
+      p_hospital.value = "";
+      p_careManager.value = "";
+      p_notes.value = "";
+      renderPatientHistory(null);
+      renderPatientList();
+    }
+
+    function fillPatientForm(patient) {
+      selectedPatientId = patient.id;
+      patientFormTitle.textContent = `利用者詳細：${patient.name || ""}`;
+      p_name.value = patient.name || "";
+      p_kana.value = patient.kana || "";
+      p_sex.value = patient.sex || "";
+      p_birth.value = patient.birth || "";
+      p_postal.value = patient.postal || "";
+      p_address.value = patient.address || "";
+      p_phone.value = patient.phone || "";
+      p_emergency.value = patient.emergency || "";
+      p_family.value = patient.family || "";
+      p_insuranceType.value = patient.insuranceType || "";
+      p_insuranceNo.value = patient.insuranceNo || "";
+      p_careLevel.value = patient.careLevel || "";
+      p_services.value = patient.services || "";
+      p_primaryDx.value = patient.primaryDx || "";
+      p_subDx.value = patient.subDx || "";
+      p_allergies.value = patient.allergies || "";
+      p_pastHistory.value = patient.pastHistory || "";
+      p_meds.value = patient.meds || "";
+      p_physician.value = patient.physician || "";
+      p_hospital.value = patient.hospital || "";
+      p_careManager.value = patient.careManager || "";
+      p_notes.value = patient.notes || "";
+      renderPatientHistory(patient);
+      renderPatientList();
+    }
+
+    function renderPatientHistory(patient) {
+      patientHistoryDiv.innerHTML = "";
+      if (!patient || !patient.records || !patient.records.length) {
+        patientHistoryDiv.innerHTML = '<div style="font-size:12px; color:#6b7280;">表示中の利用者に紐づく記録はまだありません。</div>';
+        return;
+      }
+      const recs = patient.records.slice().reverse();
+      recs.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "patient-history-item";
+        const meta = document.createElement("div");
+        meta.style.fontSize = "11px";
+        meta.style.color = "#6b7280";
+        meta.textContent = `${r.dateTime} / ${r.visitTime || "-"}訪問 / ${r.visitType || ""}`;
+        const body = document.createElement("div");
+        body.style.fontSize = "12px";
+        body.innerHTML =
+          `<div><b>S:</b> ${r.soapS}</div>` +
+          `<div><b>O:</b> ${r.soapO}</div>` +
+          `<div><b>A:</b> ${r.soapA}</div>` +
+          `<div><b>P:</b> ${r.soapP}</div>` +
+          `<div><b>看護診断:</b> ${r.soapDx || "（未入力）"}</div>`;
+        div.appendChild(meta);
+        div.appendChild(body);
+        patientHistoryDiv.appendChild(div);
+      });
+    }
+
+    function renderPatientList() {
+      const patients = loadPatients();
+      if (!patients.length) {
+        patientListDiv.innerHTML = '<div style="font-size:12px; color:#6b7280; padding:8px 10px;">まだ利用者情報がありません。<br>本日の訪問から記録を保存するか、「新規追加」から入力してください。</div>';
+        return;
+      }
+      patientListDiv.innerHTML = "";
+      patients
+        .slice()
+        .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+        .forEach(p => {
+          const item = document.createElement("div");
+          item.className = "patient-list-item";
+          if (p.id === selectedPatientId) item.classList.add("active");
+
+          const name = document.createElement("div");
+          name.className = "patient-list-name";
+          name.textContent = p.name || "(名称未設定)";
+
+          const sub = document.createElement("div");
+          sub.className = "patient-list-sub";
+          let lastDt = "";
+          if (p.records && p.records.length) {
+            const last = p.records[p.records.length - 1];
+            lastDt = last.dateTime || "";
+          }
+          sub.textContent =
+            (p.primaryDx ? p.primaryDx : "主病名未入力") +
+            (lastDt ? ` / 最終記録：${lastDt}` : "");
+
+          item.appendChild(name);
+          item.appendChild(sub);
+          item.onclick = () => {
+            fillPatientForm(p);
+          };
+
+          patientListDiv.appendChild(item);
+        });
+    }
+
+    document.getElementById("btnFix").addEventListener("click", () => {
+      if (!currentVisit) {
+        alert("記録対象の利用者を一覧から選択してください。");
+        return;
+      }
+      const txt = freeText.value.trim();
+      const now = new Date();
+      const dtStr = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+
+      const record = {
+        dateTime: dtStr,
+        visitId: currentVisit.id,
+        visitName: currentVisit.name,
+        visitTime: currentVisit.time,
+        visitType: currentVisit.type,
+        freeText: txt,
+        soapS: soapS.textContent,
+        soapO: soapO.textContent,
+        soapA: soapA.textContent,
+        soapP: soapP.textContent,
+        soapDx: soapDx.textContent
+      };
+
+      const records = loadRecords();
+      records.push(record);
+      saveRecords(records);
+      renderRecordList();
+
+      let patients = loadPatients();
+      const shortName = currentVisit.shortName || currentVisit.name.replace(" 様", "");
+      let patient = patients.find(p => p.name === shortName);
+      if (!patient) {
+        patient = {
+          id: generatePatientId(),
+          name: shortName,
+          kana: "",
+          sex: "",
+          birth: "",
+          postal: "",
+          address: currentVisit.addr || "",
+          phone: "",
+          emergency: "",
+          family: "",
+          insuranceType: "",
+          insuranceNo: "",
+          careLevel: "",
+          services: "",
+          primaryDx: currentVisit.diagnosis || "",
+          subDx: "",
+          allergies: "",
+          pastHistory: "",
+          meds: "",
+          physician: "",
+          hospital: "",
+          careManager: "",
+          notes: "",
+          records: []
+        };
+        patients.push(patient);
+      }
+      if (!patient.records) patient.records = [];
+      patient.records.push({
+        dateTime: dtStr,
+        visitTime: currentVisit.time,
+        visitType: currentVisit.type,
+        soapS: soapS.textContent,
+        soapO: soapO.textContent,
+        soapA: soapA.textContent,
+        soapP: soapP.textContent,
+        soapDx: soapDx.textContent
+      });
+      savePatients(patients);
+
+      if (selectedPatientId === patient.id) {
+        fillPatientForm(patient);
+      } else {
+        renderPatientList();
+      }
+
+      alert("このMac上に記録を保存しました。（利用者情報にも紐づけ済み・看護診断案＋家族向けレポート機能付き）");
+            renderBillingSuggestions();
+    });
+
+    document.getElementById("btnClearAll").addEventListener("click", () => {
+      if (!confirm("この端末に保存された全ての記録を削除します。利用者の記録履歴には残ります。よろしいですか？")) return;
+      localStorage.removeItem(LS_KEY_RECORDS);
+      renderRecordList();
+    });
+
+    document.getElementById("btnDraft").addEventListener("click", () => {
+      alert("このデモ版では下書き機能は動作例のみです。\n将来はクラウド同期などと連携できます。");
+    });
+
+    btnNewPatient.addEventListener("click", () => {
+      clearPatientForm();
+      setActiveTab("patient");
+    });
+
+    btnPatientSave.addEventListener("click", () => {
+      const patients = loadPatients();
+      let target = null;
+      if (selectedPatientId) {
+        target = patients.find(p => p.id === selectedPatientId);
+      }
+      if (!target) {
+        target = {
+          id: generatePatientId(),
+          records: []
+        };
+        patients.push(target);
+      }
+      target.name = p_name.value.trim();
+      target.kana = p_kana.value.trim();
+      target.sex = p_sex.value;
+      target.birth = p_birth.value;
+      target.postal = p_postal.value.trim();
+      target.address = p_address.value.trim();
+      target.phone = p_phone.value.trim();
+      target.emergency = p_emergency.value.trim();
+      target.family = p_family.value.trim();
+      target.insuranceType = p_insuranceType.value.trim();
+      target.insuranceNo = p_insuranceNo.value.trim();
+      target.careLevel = p_careLevel.value.trim();
+      target.services = p_services.value.trim();
+      target.primaryDx = p_primaryDx.value.trim();
+      target.subDx = p_subDx.value.trim();
+      target.allergies = p_allergies.value.trim();
+      target.pastHistory = p_pastHistory.value.trim();
+      target.meds = p_meds.value.trim();
+      target.physician = p_physician.value.trim();
+      target.hospital = p_hospital.value.trim();
+      target.careManager = p_careManager.value.trim();
+      target.notes = p_notes.value.trim();
+
+      selectedPatientId = target.id;
+      savePatients(patients);
+      fillPatientForm(target);
+      alert("利用者情報を保存しました。");
+    });
+
+    btnPatientReset.addEventListener("click", () => {
+      if (!confirm("入力内容をクリアします。よろしいですか？")) return;
+      clearPatientForm();
+    });
+
+    function renderStaffList() {
+      staffListDiv.innerHTML = "";
+      staffListData.forEach(s => {
+        const item = document.createElement("div");
+        item.className = "staff-item";
+
+        const header = document.createElement("div");
+        header.className = "staff-header";
+        const left = document.createElement("div");
+        left.textContent = `${s.name}（${s.role}）`;
+
+        const pill = document.createElement("span");
+        pill.className = "risk-pill " +
+          (s.risk === "high" ? "risk-high" : s.risk === "mid" ? "risk-mid" : "risk-low");
+        pill.textContent =
+          s.risk === "high" ? "🔴 高リスク（要フォロー）" :
+          s.risk === "mid" ? "🟡 中リスク（注意）" :
+          "🟢 低リスク";
+
+        header.appendChild(left);
+        header.appendChild(pill);
+
+        const detail = document.createElement("div");
+        detail.className = "staff-detail";
+        detail.innerHTML =
+          `平均訪問件数：${s.avgVisits.toFixed(1)} 件/日<br>` +
+          `深夜（22時以降）の記録件数：${s.nightRecords} 回/週程度<br>` +
+          `自己申告ストレス：${s.stress} / 5<br>` +
+          `最近「退職を考えた」：${s.thinkingLeave ? "あり" : "なし"}`;
+
+        const comment = document.createElement("div");
+        comment.className = "staff-detail";
+        comment.style.marginTop = "4px";
+        comment.textContent = s.comment;
+
+        item.appendChild(header);
+        item.appendChild(detail);
+        item.appendChild(comment);
+
+        staffListDiv.appendChild(item);
+      });
+    }
+
+    adminBtn.addEventListener("click", () => {
+      const code = prompt("管理者コードを入力してください（デモ：2468）");
+      if (code === null) return;
+      if (code === "2468") {
+        adminMode = true;
+        adminTab.style.display = "block";
+        alert("管理者モードになりました。\nタブから「スタッフ状況」を開くことができます。");
+      } else {
+        alert("管理者コードが違います。");
+      }
+    });
+
+    const chartStates = {};
+
+    function drawChart(canvasId, data, seriesList) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas || !canvas.getContext) return;
+      const ctx = canvas.getContext("2d");
+
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const width = rect.width || canvas.parentElement.clientWidth || 600;
+      const height = rect.height || 220;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const paddingLeft = 44;
+      const paddingRight = 80;
+      const paddingTop = 20;
+      const paddingBottom = 40;
+
+      let minVal = Infinity;
+      let maxVal = -Infinity;
+      seriesList.forEach(s => {
+        data.forEach(d => {
+          const v = d[s.key];
+          if (typeof v === "number") {
+            if (v < minVal) minVal = v;
+            if (v > maxVal) maxVal = v;
+          }
+        });
+      });
+      if (!isFinite(minVal) || !isFinite(maxVal)) return;
+      if (minVal === maxVal) {
+        minVal -= 1;
+        maxVal += 1;
+      }
+
+      const margin = (maxVal - minVal) * 0.12;
+      minVal -= margin;
+      maxVal += margin;
+
+      const innerW = width - paddingLeft - paddingRight;
+      const innerH = height - paddingTop - paddingBottom;
+
+      function xPos(i) {
+        if (data.length === 1) return paddingLeft + innerW / 2;
+        return paddingLeft + (innerW * i) / (data.length - 1);
+      }
+      function yPos(v) {
+        return paddingTop + innerH * (1 - (v - minVal) / (maxVal - minVal));
+      }
+
+      chartStates[canvasId] = {
+        data,
+        seriesList,
+        paddingLeft,
+        paddingRight,
+        paddingTop,
+        paddingBottom,
+        minVal,
+        maxVal,
+        width,
+        height
+      };
+
+      ctx.clearRect(0, 0, width, height);
+      const bgGrad = ctx.createLinearGradient(0, paddingTop, 0, height);
+      bgGrad.addColorStop(0, "#ffffff");
+      bgGrad.addColorStop(1, "#f9fafb");
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = "#e5e7eb";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      const yTicks = 5;
+      ctx.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#4b5563";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+
+      for (let i = 0; i <= yTicks; i++) {
+        const ratio = i / yTicks;
+        const y = paddingTop + innerH * ratio;
+        const val = maxVal - (maxVal - minVal) * ratio;
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, y);
+        ctx.lineTo(paddingLeft + innerW, y);
+        ctx.stroke();
+        ctx.fillText(Math.round(val), paddingLeft - 6, y);
+      }
+
+      ctx.setLineDash([]);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      const n = data.length;
+      for (let i = 0; i < n; i++) {
+        const x = xPos(i);
+        ctx.strokeStyle = "#edf2f7";
+        ctx.beginPath();
+        ctx.moveTo(x, paddingTop);
+        ctx.lineTo(x, paddingTop + innerH);
+        ctx.stroke();
+
+        if (i === 0 || i === n - 1 || i % 3 === 0) {
+          const label = data[i].t;
+          ctx.fillStyle = "#6b7280";
+          ctx.fillText(label, x, paddingTop + innerH + 4);
+        }
+      }
+
+      ctx.strokeStyle = "#9ca3af";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(paddingLeft, paddingTop);
+      ctx.lineTo(paddingLeft, paddingTop + innerH);
+      ctx.lineTo(paddingLeft + innerW, paddingTop + innerH);
+      ctx.stroke();
+
+      seriesList.forEach(s => {
+        ctx.beginPath();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = s.color;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        data.forEach((d, i) => {
+          const v = d[s.key];
+          if (typeof v !== "number") return;
+          const x = xPos(i);
+          const y = yPos(v);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+
+        data.forEach((d, i) => {
+          const v = d[s.key];
+          if (typeof v !== "number") return;
+          const x = xPos(i);
+          const y = yPos(v);
+          ctx.beginPath();
+          ctx.arc(x, y, 3, 0, Math.PI * 2);
+          ctx.fillStyle = "#ffffff";
+          ctx.fill();
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = s.color;
+          ctx.stroke();
+        });
+      });
+
+      ctx.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      let legendX = width - paddingRight + 10;
+      let legendY = paddingTop + 12;
+      seriesList.forEach(s => {
+        ctx.fillStyle = s.color;
+        ctx.fillRect(legendX, legendY - 4, 14, 3);
+        ctx.fillStyle = "#111827";
+        ctx.fillText(s.label, legendX + 20, legendY);
+        legendY += 16;
+      });
+    }
+
+    function attachHover(canvasId, infoId, data, seriesList) {
+      const canvas = document.getElementById(canvasId);
+      const info = document.getElementById(infoId);
+      if (!canvas || !info) return;
+
+      canvas.onmousemove = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+
+        const state = chartStates[canvasId];
+        if (!state) return;
+
+        const {
+          paddingLeft,
+          paddingRight,
+          paddingTop,
+          paddingBottom,
+          minVal,
+          maxVal,
+          width,
+          height
+        } = state;
+
+        const innerW = width - paddingLeft - paddingRight;
+        const innerH = height - paddingTop - paddingBottom;
+        if (innerW <= 0 || innerH <= 0) return;
+
+        let ratio = (x - paddingLeft) / innerW;
+        ratio = Math.max(0, Math.min(1, ratio));
+
+        const n = data.length;
+        const idx = Math.round(ratio * (n - 1));
+        const point = data[idx];
+        if (!point) return;
+
+        drawChart(canvasId, data, seriesList);
+        const ctx = canvas.getContext("2d");
+        const dpr = window.devicePixelRatio || 1;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        let text = `時点: ${point.t}`;
+        seriesList.forEach(s => {
+          const v = point[s.key];
+          if (typeof v === "number") {
+            text += ` / ${s.label}: ${v}`;
+          }
+        });
+        info.textContent = text;
+
+        function xPos(i) {
+          if (n === 1) return paddingLeft + innerW / 2;
+          return paddingLeft + (innerW * i) / (n - 1);
+        }
+        function yPos(v) {
+          return paddingTop + innerH * (1 - (v - minVal) / (maxVal - minVal));
+        }
+
+        const anchorX = xPos(idx);
+        let minY = Infinity;
+        seriesList.forEach(s => {
+          const v = point[s.key];
+          if (typeof v === "number") {
+            const y = yPos(v);
+            if (y < minY) minY = y;
+          }
+        });
+        if (!isFinite(minY)) minY = paddingTop + innerH / 2;
+
+        ctx.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
+
+        const lines = [`時点: ${point.t}`];
+        seriesList.forEach(s => {
+          const v = point[s.key];
+          if (typeof v === "number") {
+            lines.push(`${s.label}: ${v}`);
+          }
+        });
+
+        const lineHeight = 16;
+        let boxWidth = 0;
+        lines.forEach(line => {
+          const w = ctx.measureText(line).width;
+          if (w > boxWidth) boxWidth = w;
+        });
+        boxWidth += 16;
+        const boxHeight = lineHeight * lines.length + 10;
+
+        let tooltipX = anchorX + 10;
+        let tooltipBottom = minY + boxHeight + 10;
+        let tooltipTop = tooltipBottom - boxHeight;
+
+        if (tooltipBottom > height - 6) {
+          tooltipBottom = minY - 10;
+          tooltipTop = tooltipBottom - boxHeight;
+          if (tooltipTop < 6) {
+            tooltipTop = 6;
+            tooltipBottom = tooltipTop + boxHeight;
+          }
+        }
+
+        if (tooltipX + boxWidth > width - 6) {
+          tooltipX = anchorX - boxWidth - 10;
+          if (tooltipX < 6) tooltipX = 6;
+        }
+
+        ctx.save();
+        const x0 = tooltipX;
+        const y0 = tooltipTop;
+        const x1 = tooltipX + boxWidth;
+        const y1 = tooltipBottom;
+        const r = 8;
+
+        ctx.beginPath();
+        ctx.moveTo(x0 + r, y0);
+        ctx.lineTo(x1 - r, y0);
+        ctx.quadraticCurveTo(x1, y0, x1, y0 + r);
+        ctx.lineTo(x1, y1 - r);
+        ctx.quadraticCurveTo(x1, y1, x1 - r, y1);
+        ctx.lineTo(x0 + r, y1);
+        ctx.quadraticCurveTo(x0, y1, x0, y1 - r);
+        ctx.lineTo(x0, y0 + r);
+        ctx.quadraticCurveTo(x0, y0, x0 + r, y0);
+        ctx.closePath();
+
+        ctx.fillStyle = "rgba(255,255,255,0.98)";
+        ctx.strokeStyle = "#9ca3af";
+        ctx.lineWidth = 1;
+        ctx.shadowColor = "rgba(15, 23, 42, 0.15)";
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 2;
+        ctx.fill();
+        ctx.shadowColor = "transparent";
+        ctx.stroke();
+
+        ctx.fillStyle = "#111827";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        let ty = y0 + 6 + lineHeight / 2;
+        lines.forEach(line => {
+          ctx.fillText(line, x0 + 8, ty);
+          ty += lineHeight;
+        });
+
+        ctx.restore();
+      };
+
+      canvas.onmouseleave = () => {
+        const state = chartStates[canvasId];
+        if (state) {
+          drawChart(canvasId, state.data, state.seriesList);
+        }
+        info.textContent = "";
+      };
+    }
+
+    function renderVitalsForCurrent() {
+      if (!currentVitalsName) {
+        vitalTitle.textContent = "バイタルサイン";
+        vitalStatusBadge.style.display = "none";
+        fallStatusBadge.style.display = "none";
+        vitalSummary.textContent =
+          "本日の訪問から対象利用者を選択するか、「バイタルデータを閲覧する」ボタンから表示してください。";
+        vitalCharts.style.display = "none";
+        vitalTableWrapper.style.display = "none";
+        vitalLegend.style.display = "none";
+        return;
+      }
+
+      const data = vitalsData[currentVitalsName];
+      const visit = visits.find(v => v.shortName === currentVitalsName);
+      if (!data || !data.length) {
+        vitalTitle.textContent = `バイタルサイン：${currentVitalsName}`;
+        vitalStatusBadge.style.display = "none";
+        fallStatusBadge.style.display = "none";
+        vitalSummary.textContent = "この利用者のバイタルデータはまだ登録されていません。（デモではダミーデータのみ）";
+        vitalCharts.style.display = "none";
+        vitalTableWrapper.style.display = "none";
+        vitalLegend.style.display = "none";
+        return;
+      }
+
+      const overall = evaluateOverallStatus(data);
+      const last = data[data.length - 1];
+
+      vitalTitle.textContent = `バイタルサイン：${currentVitalsName}`;
+      vitalStatusBadge.className =
+        "vital-status-pill " +
+        (overall === "alert" ? "vital-status-alert" :
+         overall === "caution" ? "vital-status-caution" :
+         "vital-status-normal");
+      vitalStatusBadge.textContent = `急変リスク: ${statusLabel(overall)}`;
+      vitalStatusBadge.style.display = "inline-flex";
+
+      if (visit) {
+        const fall = evaluateFallRisk(visit);
+        fallStatusBadge.style.display = "inline-flex";
+        fallStatusBadge.textContent =
+          "転倒リスク: " +
+          (fall === "high" ? "高め" : fall === "mid" ? "やや高め" : "比較的低め");
+      } else {
+        fallStatusBadge.style.display = "none";
+      }
+
+      vitalSummary.textContent =
+        `直近の測定：HR ${last.hr} / BP ${last.sys}/${last.dia} / RR ${last.rr} / SpO₂ ${last.spo2}% / 体重 ${last.weight.toFixed(1)}kg`;
+
+      const reversed = data.slice().reverse();
+      vitalTableBody.innerHTML = "";
+      reversed.forEach(meas => {
+        const s = classifyVital(meas);
+        const tr = document.createElement("tr");
+        tr.className =
+          s === "alert" ? "vital-row-alert" :
+          s === "caution" ? "vital-row-caution" :
+          "vital-row-normal";
+        tr.innerHTML =
+          `<td>${meas.t}</td>` +
+          `<td>${meas.hr}</td>` +
+          `<td>${meas.sys}</td>` +
+          `<td>${meas.dia}</td>` +
+          `<td>${meas.rr}</td>` +
+          `<td>${meas.spo2}</td>` +
+          `<td>${meas.weight.toFixed(1)}</td>`;
+        vitalTableBody.appendChild(tr);
+      });
+
+      vitalCharts.style.display = "block";
+      vitalTableWrapper.style.display = "block";
+      vitalLegend.style.display = "block";
+
+      const seriesHRRR = [
+        { key: "hr", label: "HR", color: "#2563eb" },
+        { key: "rr", label: "RR", color: "#6b7280" }
+      ];
+      const seriesBP = [
+        { key: "sys", label: "収縮期BP", color: "#b91c1c" },
+        { key: "dia", label: "拡張期BP", color: "#f97316" }
+      ];
+      const seriesSpO2Weight = [
+        { key: "spo2", label: "SpO₂", color: "#1d4ed8" },
+        { key: "weight", label: "体重(kg)", color: "#7c3aed" }
+      ];
+
+      drawChart("chart_hr_rr", data, seriesHRRR);
+      drawChart("chart_bp", data, seriesBP);
+      drawChart("chart_spo2_weight", data, seriesSpO2Weight);
+
+      attachHover("chart_hr_rr", "info_hr_rr", data, seriesHRRR);
+      attachHover("chart_bp", "info_bp", data, seriesBP);
+      attachHover("chart_spo2_weight", "info_spo2_weight", data, seriesSpO2Weight);
+    }
+
+    if (voiceBtn && 'webkitSpeechRecognition' in window) {
+      const rec = new webkitSpeechRecognition();
+      rec.lang = 'ja-JP';
+      rec.continuous = false;
+      rec.interimResults = false;
+
+      rec.onstart = () => {
+        voiceStatus.textContent = "音声入力中です…（話し終わったら少し待ってください）";
+      };
+      rec.onend = () => {
+        voiceStatus.textContent = "";
+      };
+      rec.onerror = () => {
+        voiceStatus.textContent = "音声入力でエラーが発生しました";
+      };
+      rec.onresult = (evt) => {
+        const text = evt.results[0][0].transcript;
+        freeText.value = (freeText.value ? freeText.value + "\n" : "") + text;
+      };
+
+      voiceBtn.onclick = () => {
+        rec.start();
+      };
+    } else if (voiceStatus) {
+      voiceStatus.textContent = "このブラウザは音声入力に対応していません（Chrome 推奨）";
+    }
+
+    function renderEmergencyOptions() {
+      emergencySelect.innerHTML = "";
+      emergencyPatients.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.label;
+        emergencySelect.appendChild(opt);
+      });
+    }
+
+    function renderMap(selectedEmergencyId, nearestNurseId) {
+      mapContainer.querySelectorAll(".map-marker").forEach(el => el.remove());
+
+      nurseLocations.forEach(n => {
+        const div = document.createElement("div");
+        div.className = "map-marker map-marker-nurse" + (nearestNurseId === n.id ? " map-marker-nearest" : "");
+        div.style.left = n.x + "%";
+        div.style.top = n.y + "%";
+        div.textContent = "Ns " + n.name;
+        mapContainer.appendChild(div);
+      });
+
+      emergencyPatients.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "map-marker map-marker-patient";
+        div.style.left = p.x + "%";
+        div.style.top = p.y + "%";
+        div.textContent = p.shortName;
+        mapContainer.appendChild(div);
+      });
+    }
+
+    function calcNearest() {
+      const id = emergencySelect.value;
+      const em = emergencyPatients.find(p => p.id === id);
+      if (!em) return;
+      let nearest = null;
+      let bestDist = Infinity;
+      nurseLocations.forEach(n => {
+        const dx = n.x - em.x;
+        const dy = n.y - em.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < bestDist) {
+          bestDist = dist;
+          nearest = n;
+        }
+      });
+      renderMap(id, nearest ? nearest.id : null);
+      if (nearest) {
+        mapInfo.textContent =
+          `急変想定：${em.label} に対して、最も近い看護師は「${nearest.name}」です（マップ上の距離をもとにした概算）。`;
+      } else {
+        mapInfo.textContent = "デモ用データのため、近隣の看護師を計算できませんでした。";
+      }
+    }
+
+    btnCalcNearest.addEventListener("click", calcNearest);
+
+    function initMap() {
+      renderEmergencyOptions();
+      renderMap();
+      mapInfo.textContent =
+        "デモ用の位置情報です。急変が起きた際に、「一番近い看護師を表示」ボタンで目安となる担当者を確認できます。";
+    }
+    
+    // ===== 算定チェック（AI案・デモ） =====
+    function buildBillingSuggestions() {
+      const suggestions = [];
+
+      // visits 配列と、蓄積された記録（records）を参考にルールベースで判定
+      const records = loadRecords();
+
+      visits.forEach(v => {
+        const diag = v.diagnosis || "";
+        const typeKey = v.typeKey;
+
+        // 1) 特別管理加算（Ⅰ）候補
+        if (
+          typeKey === "med" &&
+          (diag.includes("心不全") || diag.includes("在宅酸素") || diag.includes("糖尿病"))
+        ) {
+          suggestions.push({
+            level: "alert",
+            visit: v,
+            message: "特別管理加算（Ⅰ）適用の可能性があります。主治医指示内容・在宅療養計画と照合してください。"
+          });
+        }
+
+        // 2) 医療保険→介護保険への切替候補（あくまでデモの例）
+        if (
+          typeKey === "med" &&
+          diag.includes("ADL介助")
+        ) {
+          suggestions.push({
+            level: "info",
+            visit: v,
+            message: "状態が比較的安定しており、ADL 中心の支援となっているため、介護保険での訪問看護への切替が検討可能かもしれません。"
+          });
+        }
+
+        // 3) 同時訪問算定の候補（同じ時間帯に複数訪問がある場合）
+        const sameTime = visits.filter(o => o.time === v.time && o.id !== v.id);
+        if (sameTime.length > 0) {
+          suggestions.push({
+            level: "info",
+            visit: v,
+            message: "同一時間帯に複数名の訪問が設定されています。同時訪問算定の条件を満たすか確認してください。"
+          });
+        }
+
+        // 4) 記録内容からのヒント（簡易例）
+        const visitRecords = records.filter(r => r.visitId === v.id);
+        const hasNightSymptom = visitRecords.some(r =>
+          (r.freeText || "").includes("夜") &&
+          ((r.freeText || "").includes("息苦") || (r.freeText || "").includes("呼吸"))
+        );
+        if (hasNightSymptom) {
+          suggestions.push({
+            level: "alert",
+            visit: v,
+            message: "夜間の呼吸症状が継続している記録があります。訪問頻度や特別管理加算の要件を再確認してください。"
+          });
+        }
+      });
+
+      return suggestions;
+    }
+
+    // ====== 算定チェック＆レセプトAI 用（/billing-check を呼び出す新ロジック） ======
+
+let lastBillingResult = null; // 職員教育モード用
+
+// 今日の日付を "YYYY/MM/DD (曜)" に変換
+function formatToday() {
+  const d = new Date();
+  const w = ["日", "月", "火", "水", "木", "金", "土"];
+  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}（${w[d.getDay()]}）`;
+}
+
+// フロントのローカルに保存されている記録を読み込む（あなたの環境に合わせて使用）
+function loadRecords() {
+  try {
+    return JSON.parse(localStorage.getItem("records") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+async function runBillingCheck() {
+  const today = formatToday();
+  const records = loadRecords();
+
+  const payload = {
+    dateLabel: today,
+    visits: visits.map(v => ({
+      id: v.id,
+      name: v.shortName || v.name.replace(" 様", ""),
+      type: v.type,
+      priority: v.priorityKey,
+    })),
+    records: records
+  };
+
+  try {
+    const resp = await fetch("http://localhost:8000/billing-check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!resp.ok) throw new Error("API error: " + resp.status);
+
+    const data = await resp.json();
+    lastBillingResult = data;
+    renderBillingResult(data);
+  } catch (e) {
+    console.error(e);
+    alert("AI算定エンジンの呼び出しに失敗しました: " + e.message);
+  }
+}
+
+// ====== 結果を画面に描画 ======
+
+function renderBillingResult(data) {
+  if (!data) return;
+
+  billingCheckSummary.textContent =
+    data.summary || "AI からの算定結果を取得できませんでした。";
+
+  const items = data.items || [];
+
+  const groups = {
+    applied: [],
+    candidate: [],
+    warning: []
+  };
+
+  items.forEach(item => {
+    const cat = item.category || "candidate";
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(item);
+  });
+
+  billingCheckList.innerHTML = "";
+
+  function makeBadge(text, color) {
+    const span = document.createElement("span");
+    span.className = "billing-badge";
+    span.textContent = text;
+
+    if (color === "blue") span.style.background = "#dbeafe", span.style.color = "#1e3a8a";
+    if (color === "green") span.style.background = "#dcfce7", span.style.color = "#065f46";
+    if (color === "red") span.style.background = "#fee2e2", span.style.color = "#991b1b";
+
+    return span;
+  }
+
+  function renderGroup(label, list, color) {
+    const groupDiv = document.createElement("div");
+    groupDiv.className = "billing-group";
+
+    const header = document.createElement("div");
+    header.className = "billing-group-header";
+    header.appendChild(makeBadge(label, color));
+    groupDiv.appendChild(header);
+
+    if (!list.length) {
+      const empty = document.createElement("div");
+      empty.className = "billing-item-empty";
+      empty.textContent = "該当なし";
+      groupDiv.appendChild(empty);
+    } else {
+      list.forEach(it => {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "billing-item";
+
+        const titleDiv = document.createElement("div");
+        titleDiv.className = "billing-item-title";
+
+        const name = it.patient || it.target || "";
+        const title = it.title || "(タイトル未設定)";
+        titleDiv.textContent = name ? `【${name}】${title}` : title;
+
+        const detailDiv = document.createElement("div");
+        detailDiv.className = "billing-item-detail";
+        detailDiv.textContent = it.detail || "";
+
+        itemDiv.appendChild(titleDiv);
+        itemDiv.appendChild(detailDiv);
+        groupDiv.appendChild(itemDiv);
+      });
+    }
+
+    billingCheckList.appendChild(groupDiv);
+  }
+
+  renderGroup("適用中", groups.applied, "blue");
+  renderGroup("候補", groups.candidate, "green");
+  renderGroup("警告", groups.warning, "red");
+
+  // 職員教育モード
+  billingExplainBox.style.display = "none";
+  billingExplainBox.textContent = data.education || "";
+}
+
+// ====== ボタンにイベント付与 ======
+document.getElementById("btnBillingRun").addEventListener("click", runBillingCheck);
+document.getElementById("btnBillingExplain").addEventListener("click", () => {
+  if (!lastBillingResult) return;
+  billingExplainBox.style.display = "block";
+});
+
+    renderStaffList();
+    renderVisitList();
+    renderRecordList();
+    renderChatList();
+    renderPatientList();
+    initMap();
+    renderBillingSuggestions();
+    apiStatusText.textContent = "API 未確認（必要に応じてボタンで確認できます）";
+
+  </script>
+</body>
+</html>
