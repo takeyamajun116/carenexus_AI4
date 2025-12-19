@@ -1027,7 +1027,15 @@ function runAIGeneration() {
     setTimeout(() => {
         btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> AI生成';
         document.getElementById('diagnosisArea').innerHTML = "<span class='tag'>#皮膚(生理)</span> 皮膚統合性障害リスク";
-        document.getElementById('soapArea').innerText = "[S] 「良くなってる」\n[O] 36.6℃, 創部良化\n[A] 順調\n[P] 継続";
+        document.getElementById('soapArea').innerText = "[S] 「前回より良くなっている感じがする。痛みもほとんど気にならない」との発言あり。\n[O] 体温36.6℃と平熱。発熱兆候なし。
+創部は発赤・腫脹なく、滲出液も認められず乾燥良好。
+創縁の離開なく、肉芽形成は良好で治癒過程は順調。
+周囲皮膚のトラブル（発疹・浸軟）も認められない。
+全身状態は安定しており、バイタルサインに大きな変動なし。\n[A] 創部は感染兆候なく、計画どおり良好な治癒経過をたどっている。
+本人の自覚症状も改善傾向であり、セルフケアの理解・実施状況も問題なし。
+現時点で新たな看護問題は認められない。\n[P] 現在の処置・観察を継続する。
+創部状態の変化（発赤・疼痛・滲出液増加など）について、引き続き本人・家族へ説明と注意喚起を行う。
+次回訪問時も創部および全身状態を評価し、必要に応じて対応を検討する。";
         initBilling();
     }, 1000);
 }
@@ -1113,7 +1121,7 @@ function loadPrevKBS() {
     document.getElementById('input_k').value = baseK; document.getElementById('input_b').value = baseB; document.getElementById('input_s').value = baseS;
 }
 function saveRecord() {
-    if(confirm("【実務ナッジ】\nこの訪問で有料駐車場は利用しましたか？\n\nOK=はい、利用した\nキャンセル=いいえ")) {
+    if(confirm("【実務ナッジ】\nこの訪問で有料駐車場は利用しましたか？\n\nOK=利用した\nキャンセル=いいえ")) {
         const fee = prompt("駐車料金を入力してください(円)", "400");
         if(fee) alert(`${fee}円を立替経費に保存しました。`);
     } else {
