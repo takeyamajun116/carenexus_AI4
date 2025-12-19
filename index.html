@@ -193,17 +193,19 @@ white-space: nowrap; transition:0.2s; }
 .sales-val { font-size: 20px; font-weight: 800; color: var(--text-main); }
 .sales-label { font-size: 11px; color: var(--text-sub); }
 
-/* Admin Staff Timeline */
+/* Admin Staff Timeline (24H Enhanced) */
 .timeline-scroll { overflow-x: auto; white-space: nowrap; padding-bottom: 10px; }
-.timeline-table { min-width: 800px; width: 100%; border-collapse: collapse; table-layout: fixed; }
-.timeline-table th { background: #f9fafb; font-size: 11px; padding: 4px; border-right: 1px solid #eee; text-align: center; color: #666; width: 50px; }
-.timeline-table td { border-bottom: 1px solid #eee; padding: 4px 0; height: 40px; position: relative; background: #fff; }
-.time-slot { background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 4px; font-size: 10px; color: #0369a1; display: flex; align-items: center; justify-content: center; position: absolute; top: 4px; bottom: 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; transition: 0.1s; }
+.timeline-table { min-width: 1500px; width: 100%; border-collapse: collapse; table-layout: fixed; }
+.timeline-table th { background: #f9fafb; font-size: 11px; padding: 4px; border-right: 1px solid #eee; text-align: center; color: #666; width: 40px; }
+.timeline-table td { border-bottom: 1px solid #eee; padding: 4px 0; height: 40px; position: relative; background: #fff; border-right:1px solid #f3f4f6; }
+.time-slot { background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 4px; font-size: 10px; color: #0369a1; display: flex; align-items: center; justify-content: center; position: absolute; top: 4px; bottom: 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; transition: 0.1s; left:1px; right:1px; }
 .time-slot:hover { z-index: 10; transform: scale(1.05); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 .ts-visit { background: #dbeafe; border-color: #93c5fd; }
 .ts-break { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
 .ts-mtg { background: #f3f4f6; border-color: #d1d5db; color: #4b5563; }
-.ts-oncall { background: #f3e8ff; border-color: #d8b4fe; color: #7e22ce; }
+.ts-oncall { background: #f3e8ff; border-color: #d8b4fe; color: #7e22ce; font-weight:bold; }
+.highlight-change { animation: flashGreen 2s infinite; border: 2px solid #10b981; }
+@keyframes flashGreen { 0% { background-color: #dcfce7; } 50% { background-color: #86efac; } 100% { background-color: #dcfce7; } }
 
 /* Hub Monitor */
 .terminal-window { background: #1e1e1e; color: #00ff00; font-family: 'Courier New', monospace; padding: 12px; border-radius: 6px; height: 200px; overflow-y: auto; font-size: 11px; line-height: 1.4; border: 1px solid #333; }
@@ -222,7 +224,12 @@ white-space: nowrap; transition:0.2s; }
 .timer-red { background: #b91c1c; animation: pulse 1s infinite; }
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 .memo-area { width: 100%; border: none; background: #fffbeb; font-size: 13px; line-height: 1.5; padding: 8px; border-radius: 4px; color: #78350f; resize: none; min-height: 60px; }
-.billing-check-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+/* Improved Admin Billing UI */
+.billing-admin-card { border:1px solid #bfdbfe; background:#fff; border-radius:8px; margin-bottom:12px; padding:0; overflow:hidden; }
+.billing-admin-header { background:#eff6ff; padding:8px 12px; font-weight:bold; font-size:13px; color:#1e40af; display:flex; justify-content:space-between; }
+.billing-admin-body { padding:8px 12px; }
+.billing-item-row { display:flex; align-items:center; gap:8px; font-size:12px; padding:6px 0; border-bottom:1px solid #f3f4f6; }
+.billing-item-row:last-child { border:none; }
 
 </style>
 </head>
@@ -404,6 +411,14 @@ white-space: nowrap; transition:0.2s; }
                         <i class="fa-solid fa-triangle-exclamation"></i> <b>指示書期限切れ</b><br>田中 太郎様：あと2日
                     </div>
                 </div>
+
+                <div class="panel" style="background:#fffbeb; border-color:#fcd34d;">
+                    <div class="panel-title" style="color:#92400e; border-bottom-color:#fde68a;">
+                        <span><i class="fa-solid fa-note-sticky"></i> 自分用メモ</span>
+                    </div>
+                    <textarea class="memo-area" id="homeMemo" oninput="saveHomeMemo()" placeholder="備忘録などを入力..."></textarea>
+                </div>
+
                 <div class="panel">
                     <div class="panel-title">マイタスク (ToDo) <button class="btn btn-sm btn-ghost" onclick="addTodo()"><i class="fa-solid fa-plus"></i></button></div>
                     <div id="todoList">
@@ -701,6 +716,19 @@ white-space: nowrap; transition:0.2s; }
 
         <div class="panel">
             <div class="panel-title">
+                <span><i class="fa-solid fa-square-parking"></i> 駐車場立替申請一覧 (12月)</span>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="micro-table">
+                    <thead><tr><th>申請日</th><th>職員名</th><th>利用者名</th><th>金額</th><th>承認</th></tr></thead>
+                    <tbody id="parkingAdminTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">
                 <span><i class="fa-solid fa-file-invoice"></i> レセプト請求支援 (B-1)</span>
                 <button class="btn btn-xs btn-outline" onclick="alert('請求書CSVを出力しました')">CSV出力</button>
             </div>
@@ -752,58 +780,25 @@ white-space: nowrap; transition:0.2s; }
                     <span style="font-weight:bold; font-size:13px;">(A-3) 訪問ルート最適化シミュレーション</span>
                     <button class="btn btn-sm btn-primary" onclick="runOptimization()">最適化実行</button>
                 </div>
-                <div id="optResult" style="display:none; font-size:12px; color:#15803d; margin-top:8px; background:#dcfce7; padding:8px; border-radius:4px;">
-                    <i class="fa-solid fa-check"></i> 移動距離が <b>18.5km</b> → <b>12.3km</b> に短縮可能です。スケジュールを更新しますか？
-                </div>
+                <div id="optResult" style="display:none; font-size:12px; color:#15803d; margin-top:8px; background:#dcfce7; padding:10px; border-radius:4px; line-height:1.6;">
+                    </div>
             </div>
         </div>
 
         <div class="panel">
             <div class="panel-title">
-                <span>全職員スケジュール (本日)</span>
+                <span>全職員スケジュール (本日 24H)</span>
                 <button class="btn btn-sm btn-outline"><i class="fa-solid fa-pen"></i> 編集</button>
             </div>
             <div class="timeline-scroll">
-                <table class="timeline-table">
+                <table class="timeline-table" id="adminScheduleTable">
                     <thead>
                         <tr>
-                            <th style="width:80px;">氏名</th>
-                            <th>09:00</th><th>09:30</th><th>10:00</th><th>10:30</th><th>11:00</th><th>11:30</th>
-                            <th>12:00</th><th>12:30</th><th>13:00</th><th>13:30</th><th>14:00</th><th>14:30</th>
-                            <th>15:00</th><th>15:30</th><th>16:00</th><th>16:30</th><th>17:00</th><th>17:30</th>
-                            <th style="background:#f3e8ff; color:#7e22ce;">18:00~</th>
-                        </tr>
+                            <th style="width:80px; position:sticky; left:0; background:#f9fafb; z-index:10; border-right:2px solid #ddd;">氏名</th>
+                            </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td style="font-weight:bold; font-size:12px; padding-left:4px;">Ns.山田</td>
-                            <td colspan="2"><div class="time-slot ts-visit">田中様</div></td>
-                            <td></td>
-                            <td colspan="2"><div class="time-slot ts-visit">鈴木様</div></td>
-                            <td colspan="2"><div class="time-slot ts-break">休憩</div></td>
-                            <td></td>
-                            <td colspan="2"><div class="time-slot ts-visit">伊藤様</div></td>
-                            <td></td>
-                            <td colspan="2"><div class="time-slot ts-mtg">会議</div></td>
-                            <td></td>
-                            <td colspan="2"><div class="time-slot ts-visit">記録</div></td>
-                            <td><div class="time-slot ts-oncall">待機</div></td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight:bold; font-size:12px; padding-left:4px;">PT.鈴木</td>
-                            <td></td>
-                            <td colspan="3"><div class="time-slot ts-visit" style="background:#fef9c3; border-color:#fde047; color:#854d0e;">リハビリ巡回</div></td>
-                            <td></td>
-                            <td></td>
-                            <td colspan="2"><div class="time-slot ts-break">休憩</div></td>
-                            <td colspan="3"><div class="time-slot ts-visit">佐藤様</div></td>
-                            <td></td>
-                            <td colspan="2"><div class="time-slot ts-visit">高橋様</div></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                    </tbody>
+                    <tbody id="adminScheduleBody">
+                        </tbody>
                 </table>
             </div>
         </div>
@@ -880,9 +875,7 @@ const patientDatabase = {
         summary: "【身体】血圧は130台で安定。褥瘡（仙骨部）は肉芽形成期入り。",
         history: [{ date: "12/15 09:30", staff: "Ns.山田", content: "定期訪問。バイタル安定。" }],
         omahaScores: { k: [2,2,3,3,3], b: [3,3,3,4,4], s: [2,2,3,3,3] },
-        // Feature C-1
         parking: "https://maps.google.com/?q=parking+hachioji",
-        // Feature B-1
         billingProps: [
             {name: "特別管理加算(II)", checked: true},
             {name: "緊急時訪問看護加算", checked: true},
@@ -914,6 +907,14 @@ const patientDatabase = {
     }
 };
 
+// Mock Parking Data for Admin Dashboard
+const parkingRecords = [
+    { date: "12/19", staff: "Ns.山田", patient: "佐藤 花子", amount: 400 },
+    { date: "12/18", staff: "PT.鈴木", patient: "鈴木 一郎", amount: 600 },
+    { date: "12/18", staff: "Ns.山田", patient: "田中 太郎", amount: 400 },
+    { date: "12/17", staff: "Ns.高橋", patient: "佐藤 花子", amount: 400 }
+];
+
 // Feature D-2: Staff DB
 const staffDatabase = [
     { name: "Ns.山田", level: 5, skills: ["創傷", "ターミナル"] },
@@ -939,6 +940,7 @@ function setTab(id) {
     const tabMap = {'home':0, 'calendar':1, 'record':2, 'collab':3, 'newuser':4, 'admin':5};
     const tabs = document.querySelectorAll('.tab');
     if(tabs[tabMap[id]]) tabs[tabMap[id]].classList.add('active');
+    if(id === 'home') loadHomeMemo();
     if(id === 'calendar') renderCalendar();
     if(id === 'record') { if(!myChart) setTimeout(initChart, 100); switchPatient(); }
     if(id === 'admin') { 
@@ -946,6 +948,8 @@ function setTab(id) {
         loadAdminMemo(); // E-1
         renderBillingAdmin(); // B-1
         renderHRCards(); // D-2
+        render24HSchedule(); // New A-1
+        renderParkingDashboard(); // New Parking
     }
 }
 function toggleAdminMode() { 
@@ -1122,7 +1126,7 @@ function switchPatient() {
 function renderMap() {
     if(document.getElementById('adminMap').innerHTML.trim() !== "") return;
     const map = L.map('adminMap').setView([35.6581, 139.3303], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
     const icons = { staff: L.divIcon({className:'custom-pin', html:'<i class="fa-solid fa-user-nurse" style="color:var(--primary)"></i>'}), patient: L.divIcon({className:'custom-pin', html:'<i class="fa-solid fa-house-chimney-medical" style="color:var(--danger)"></i>'}) };
     L.marker([35.6581, 139.3303], {icon: icons.staff}).addTo(map).bindPopup("Ns.山田: 移動中");
     L.marker([35.6600, 139.3400], {icon: icons.staff}).addTo(map).bindPopup("PT.鈴木: 訪問中");
@@ -1134,6 +1138,10 @@ function addTodo() { document.getElementById('todoList').innerHTML += `<label cl
 function toggleTodo(el) { el.parentElement.classList.toggle('completed', el.checked); }
 
 // --- New Features Logic ---
+
+// Feature: Home Screen Memo
+function saveHomeMemo() { localStorage.setItem('homeMemo', document.getElementById('homeMemo').value); }
+function loadHomeMemo() { const m = localStorage.getItem('homeMemo'); if(m) document.getElementById('homeMemo').value = m; }
 
 // Feature C-1: Parking Map
 function openParkingMap(pid) {
@@ -1181,15 +1189,40 @@ function toggleVisitTimer() {
 function saveAdminMemo() { localStorage.setItem('adminMemo', document.getElementById('adminMemo').value); }
 function loadAdminMemo() { const m = localStorage.getItem('adminMemo'); if(m) document.getElementById('adminMemo').value = m; }
 
-// Feature B-1: Admin Billing List
+// Feature: Parking Dashboard (Admin)
+function renderParkingDashboard() {
+    const tbody = document.getElementById('parkingAdminTableBody'); tbody.innerHTML = "";
+    parkingRecords.forEach(r => {
+        tbody.innerHTML += `<tr>
+            <td>${r.date}</td>
+            <td style="font-weight:bold;">${r.staff}</td>
+            <td>${r.patient}様</td>
+            <td>${r.amount}円</td>
+            <td><button class="btn btn-xs btn-outline">承認</button></td>
+        </tr>`;
+    });
+}
+
+// Feature B-1: Admin Billing List (Enhanced UI)
 function renderBillingAdmin() {
     const el = document.getElementById('adminBillingList'); el.innerHTML = "";
     Object.values(patientDatabase).forEach(p => {
         let rows = "";
         p.billingProps.forEach(b => {
-            rows += `<div><i class="fa-solid fa-check" style="color:${b.checked?'green':'#ccc'}"></i> ${b.name}</div>`;
+            rows += `
+            <div class="billing-item-row">
+                <input type="checkbox" ${b.checked ? 'checked' : ''} style="width:14px; height:14px; margin:0;">
+                <span style="flex:1;">${b.name}</span>
+            </div>`;
         });
-        el.innerHTML += `<div class="billing-check-row"><div style="font-weight:bold; font-size:13px;">${p.name}</div><div style="font-size:11px; text-align:right;">${rows}</div></div>`;
+        el.innerHTML += `
+        <div class="billing-admin-card">
+            <div class="billing-admin-header">
+                <span>${p.name}</span>
+                <button class="btn btn-xs btn-primary">確定</button>
+            </div>
+            <div class="billing-admin-body">${rows}</div>
+        </div>`;
     });
 }
 
@@ -1207,15 +1240,110 @@ function renderHRCards() {
     });
 }
 
-// Feature A-3: Optimization Simulation
+// Feature A-1 & A-3: 24H Schedule and Optimization
+function render24HSchedule() {
+    const thead = document.querySelector('#adminScheduleTable thead tr');
+    const tbody = document.getElementById('adminScheduleBody');
+    if(thead.children.length > 1) return; // Already rendered
+
+    // 1. Render Headers (08:00 to 08:00 next day for 24H view)
+    let headerHtml = '<th style="width:80px; position:sticky; left:0; background:#f9fafb; z-index:10; border-right:2px solid #ddd;">氏名</th>';
+    const hours = [];
+    for(let i=8; i<32; i++) { // 8 to 32 (next day 8)
+        let h = i % 24;
+        let display = `${h}:00`;
+        hours.push(h);
+        headerHtml += `<th colspan="2" style="border-right:1px solid #ddd;">${display}</th>`;
+    }
+    thead.innerHTML = headerHtml;
+
+    // 2. Render Body
+    // Helper to calc colspan position: index 0 = 8:00. Each hour has 2 slots (30min).
+    // Target: Ns.Yamada (id=row_yamada)
+    // 09:00 Tanaka (2 slots), 13:00 Suzuki (2 slots), 18:00 OnCall
+    
+    // Row 1: Ns.Yamada
+    let row1 = `<tr><td style="font-weight:bold; font-size:12px; padding-left:4px; position:sticky; left:0; background:#fff; z-index:10; border-right:2px solid #ddd;">Ns.山田</td>`;
+    for(let i=0; i<48; i++) { // 48 slots (24h * 2)
+        // 0=08:00, 1=08:30, 2=09:00
+        let content = "";
+        let idAttr = "";
+        let colspan = 1;
+        
+        // Schedule Definition
+        if(i===2) { content = '<div class="time-slot ts-visit">田中様</div>'; colspan=2; } // 09:00-10:00
+        else if(i===3) { content=""; } // skipped by colspan
+        
+        else if(i===10) { content = '<div class="time-slot ts-visit" id="slot_yamada_suzuki">鈴木様</div>'; colspan=2; idAttr='id="td_yamada_1300"'; } // 13:00-14:00 (Optimization Target)
+        else if(i===11) { content=""; }
+        
+        else if(i===12) { content = ''; idAttr='id="td_yamada_1400"'; } // 14:00 (Optimization Destination)
+        
+        else if(i===20) { content = '<div class="time-slot ts-oncall">待機(夜)</div>'; colspan=12; } // 18:00-24:00 (Visual simpl.)
+        else if(i>20 && i<32) { content=""; }
+
+        if(content !== undefined && content !== "") row1 += `<td colspan="${colspan}" ${idAttr}>${content}</td>`;
+        else if(content === "") { /* skipped */ }
+        else row1 += `<td></td>`;
+    }
+    row1 += "</tr>";
+
+    // Row 2: PT.Suzuki
+    let row2 = `<tr><td style="font-weight:bold; font-size:12px; padding-left:4px; position:sticky; left:0; background:#fff; z-index:10; border-right:2px solid #ddd;">PT.鈴木</td>`;
+    for(let i=0; i<48; i++) {
+        let content = undefined;
+        let colspan = 1;
+        if(i===6) { content = '<div class="time-slot ts-visit" style="background:#fef9c3; border-color:#fde047; color:#854d0e;">リハビリ</div>'; colspan=3; } // 11:00-12:30
+        else if(i>6 && i<9) { content=""; }
+        
+        if(content !== undefined && content !== "") row2 += `<td colspan="${colspan}">${content}</td>`;
+        else if(content === "") { /* skipped */ }
+        else row2 += `<td></td>`;
+    }
+    row2 += "</tr>";
+
+    tbody.innerHTML = row1 + row2;
+}
+
+// Feature A-3: Optimization Simulation (Concrete Feedback)
 function runOptimization() {
     const btn = document.querySelector('#adminMap + div button');
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 計算中...';
+    
     setTimeout(() => {
-        document.getElementById('optResult').style.display = 'block';
+        // 1. Text Feedback
+        const resBox = document.getElementById('optResult');
+        resBox.innerHTML = `
+            <strong><i class="fa-solid fa-check"></i> 最適化完了</strong><br>
+            Ns.山田の 13:00 鈴木様訪問 を <strong>14:00</strong> に変更しました。<br>
+            総移動距離: 18.5km <i class="fa-solid fa-arrow-right"></i> <strong>12.3km</strong> (▲6.2km短縮)
+        `;
+        resBox.style.display = 'block';
+
+        // 2. Update Schedule Visual (Demo)
+        const oldCell = document.getElementById('td_yamada_1300'); // 13:00 cell
+        const newCell = document.getElementById('td_yamada_1400'); // 14:00 cell
+        
+        if(oldCell && newCell) {
+            // Move the div
+            const slotDiv = document.getElementById('slot_yamada_suzuki');
+            if(slotDiv) {
+                slotDiv.classList.add('highlight-change');
+                // Remove from old, add to new. Note: table logic is tricky with colspan, 
+                // but for this specific demo, we simply swap HTML content for visual effect.
+                oldCell.innerHTML = ""; 
+                oldCell.removeAttribute('colspan'); // Reset simple
+                
+                newCell.setAttribute('colspan', '2');
+                newCell.innerHTML = '<div class="time-slot ts-visit highlight-change">鈴木様</div>';
+                
+                // Adjust next cell (since we added colspan=2) - strictly for valid HTML in demo
+                if(newCell.nextElementSibling) newCell.nextElementSibling.style.display = 'none';
+            }
+        }
+
         btn.innerHTML = '最適化実行';
         btn.classList.add('btn-ghost');
-        alert("ルート最適化完了\n\n・Ns.山田の移動順序を一部入れ替えました\n・総距離が約30%削減されました");
     }, 1500);
 }
 
