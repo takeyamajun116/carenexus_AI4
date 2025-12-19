@@ -95,24 +95,12 @@ white-space: nowrap; transition:0.2s; }
 .evt-visit { background: var(--primary); }
 .evt-mtg { background: var(--warning); }
 
-/* Chat */
-.chat-container { display: flex; flex-direction: column; height: 500px; background: #f3f4f6; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
-.chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-.chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.4; position: relative; }
-.chat-row { display: flex; gap: 8px; align-items: flex-end; }
-.chat-row.them .chat-bubble { background: #fff; border: 1px solid #e5e7eb; border-bottom-left-radius: 2px; color: var(--text-main); }
-.chat-avatar { width: 32px; height: 32px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #555; flex-shrink: 0; }
-.chat-name { font-size: 10px; color: #888; margin-bottom: 2px; }
-.chat-row.me { justify-content: flex-end; }
-.chat-row.me .chat-bubble { background: #dbeafe; border: 1px solid #bfdbfe; border-bottom-right-radius: 2px; color: #1e40af; }
-.chat-input-area { background: #fff; padding: 10px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
-
 /* Admin Map & Load */
 .map-container { position: relative; height: 350px; width: 100%; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); z-index: 1; }
 .custom-pin { display: flex; justify-content: center; align-items: center; width: 32px !important; height: 32px !important; background: transparent; border: none; }
 .custom-pin i { font-size: 28px; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3)); transition: transform 0.2s; }
 
-.load-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.load-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
 .load-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; }
 .load-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
 .load-name { font-weight: bold; font-size: 14px; }
@@ -153,10 +141,13 @@ white-space: nowrap; transition:0.2s; }
 .history-item::before { content: ''; position: absolute; left: -6.5px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: #999; border: 2px solid #fff; }
 .summary-box { background: #f0f9ff; border: 1px solid #bae6fd; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; line-height: 1.6; }
 
-.billing-rec { display: flex; align-items: center; justify-content: flex-start; gap: 10px; padding: 12px; background: #fff; border: 1px solid #bfdbfe; border-radius: 8px; margin-bottom: 8px; text-align: left; }
+.billing-rec { display: flex; flex-direction: column; gap: 6px; padding: 12px; background: #fff; border: 1px solid #bfdbfe; border-radius: 8px; margin-bottom: 8px; text-align: left; }
+.billing-row-main { display: flex; align-items: center; gap: 10px; }
 .billing-rec input { margin: 0; width: 16px; height: 16px; flex-shrink: 0; }
 .billing-content { flex: 1; }
 .billing-title { font-weight:bold; font-size:14px; display:flex; justify-content:space-between; width:100%; }
+.billing-desc { font-size: 11px; color: #4b5563; background: #f9fafb; padding: 8px; border-radius: 4px; margin-top: 4px; border: 1px dashed #e5e7eb; display: none; }
+.billing-desc-toggle { font-size: 10px; color: var(--primary); cursor: pointer; text-decoration: underline; margin-left: 4px; }
 
 .todo-item { display: flex; align-items: center; justify-content: flex-start; gap: 10px; padding: 12px; background: #fff; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; transition: 0.2s; margin-bottom:8px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); text-align: left; }
 .todo-item input { margin: 0; width: 16px; height: 16px; flex-shrink: 0; }
@@ -180,12 +171,6 @@ white-space: nowrap; transition:0.2s; }
 .kbs-input-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 .kbs-input-col label { color: #1e40af; margin-bottom: 4px; }
 .kbs-input-col select { border-color: #bfdbfe; color: #1e40af; font-weight: bold; }
-
-/* Matching */
-.match-card { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px; }
-.match-info { display: flex; align-items: center; gap: 10px; }
-.match-avatar { width: 36px; height: 36px; background: #e0e7ff; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; }
-.match-score { font-size: 11px; font-weight: bold; color: var(--success); background: #dcfce7; padding: 2px 6px; border-radius: 4px; }
 
 /* Admin Sales Dashboard */
 .sales-stat { text-align: center; padding: 10px; border-right: 1px solid #eee; }
@@ -215,11 +200,22 @@ white-space: nowrap; transition:0.2s; }
 .log-msg { color: #cfc; }
 
 /* === New Styles for HR & Optimization === */
-.hr-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-.skill-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; }
-.level-stars { color: #f59e0b; font-size: 11px; }
-.progress-container { background: #e5e7eb; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 4px; }
-.progress-bar { height: 100%; background: var(--primary); border-radius: 4px; }
+.hr-ladder-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; }
+.hr-ladder-card::after { content:''; position:absolute; top:0; left:0; width:6px; height:100%; background:var(--primary); }
+.hr-header { display:flex; justify-content:space-between; align-items:flex-start; }
+.hr-avatar { width:40px; height:40px; border-radius:50%; background:#e0e7ff; color:var(--primary); display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:16px; margin-right:10px; }
+.hr-name-box { flex:1; }
+.hr-name { font-weight:bold; font-size:15px; display:block; }
+.hr-role { font-size:11px; color:#666; }
+.hr-badge { font-size:10px; padding:3px 8px; border-radius:12px; background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; font-weight:bold; }
+.ladder-level-box { text-align:right; }
+.ladder-level { font-size:20px; font-weight:900; color:var(--primary); line-height:1; }
+.ladder-label { font-size:10px; color:#666; display:block; }
+.hr-metrics { display:grid; grid-template-columns: 1fr 1fr; gap:8px; background:#f9fafb; padding:8px; border-radius:6px; font-size:11px; }
+.hr-metric-item { display:flex; flex-direction:column; }
+.hr-metric-val { font-weight:bold; color:#111; }
+.hr-next-goal { font-size:11px; color:#b45309; background:#fffbeb; padding:6px; border-radius:4px; margin-top:4px; border:1px solid #fcd34d; }
+
 .timer-widget { position: fixed; bottom: 80px; right: 16px; background: rgba(30,41,59,0.9); color: white; padding: 10px 16px; border-radius: 30px; display: none; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 2000; animation: fadeIn 0.3s; }
 .timer-red { background: #b91c1c; animation: pulse 1s infinite; }
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
@@ -228,8 +224,9 @@ white-space: nowrap; transition:0.2s; }
 .billing-admin-card { border:1px solid #bfdbfe; background:#fff; border-radius:8px; margin-bottom:12px; padding:0; overflow:hidden; }
 .billing-admin-header { background:#eff6ff; padding:8px 12px; font-weight:bold; font-size:13px; color:#1e40af; display:flex; justify-content:space-between; }
 .billing-admin-body { padding:8px 12px; }
-.billing-item-row { display:flex; align-items:center; gap:8px; font-size:12px; padding:6px 0; border-bottom:1px solid #f3f4f6; }
+.billing-item-row { display:flex; flex-direction:column; gap:4px; border-bottom:1px solid #f3f4f6; padding:8px 0; }
 .billing-item-row:last-child { border:none; }
+.billing-item-head { display:flex; align-items:center; gap:8px; font-size:12px; }
 
 </style>
 </head>
@@ -293,7 +290,6 @@ white-space: nowrap; transition:0.2s; }
         <div class="tab active" onclick="setTab('home')">ホーム</div>
         <div class="tab" onclick="setTab('calendar')">月次予定</div>
         <div class="tab" onclick="setTab('record')">記録・AI</div>
-        <div class="tab" onclick="setTab('collab')">連携</div>
         <div class="tab" onclick="setTab('newuser')">新規登録</div>
         <div class="tab" onclick="setTab('admin')" id="adminTab" style="display:none;">管理・分析</div>
     </div>
@@ -603,54 +599,6 @@ white-space: nowrap; transition:0.2s; }
         </div>
     </section>
 
-    <section id="sect-collab" class="section">
-        <div class="panel" style="padding:0; overflow:hidden;">
-            <div class="panel-title" style="padding:16px; margin:0; background:#fff; border-bottom:1px solid #eee;">多職種連携ルーム (佐藤 花子様)</div>
-            <div class="chat-container" style="border:none;">
-                <div class="chat-messages" id="chatArea">
-                    <div class="chat-row them">
-                        <div class="chat-avatar" style="background:#dbeafe; color:#1e40af;">Dr</div>
-                        <div><div class="chat-name">Dr.山田 (主治医)</div><div class="chat-bubble">画像の褥瘡、良くなっていますね。アクトシン軟膏を継続してください。</div></div>
-                    </div>
-                    <div class="chat-row me">
-                        <div><div class="chat-bubble">承知いたしました。本日も処置を行い、経過観察します。</div></div>
-                    </div>
-                </div>
-                <div class="chat-input-area">
-                    <input type="file" id="chatImageInput" style="display:none" accept="image/*" onchange="sendChatImage(this)">
-                    <button class="btn btn-ghost" onclick="document.getElementById('chatImageInput').click()"><i class="fa-solid fa-camera"></i></button>
-                    <input type="text" placeholder="メッセージ..." style="margin:0;">
-                    <button class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i></button>
-                </div>
-            </div>
-        </div>
-
-        <div class="panel">
-            <div class="panel-title"><i class="fa-solid fa-handshake-simple"></i> 新規受け入れマッチング (病院・クリニック連携)</div>
-            <div style="font-size:12px; color:#666; margin-bottom:12px;">地域の医療機関からの訪問看護依頼が届いています。</div>
-            
-            <div class="match-card">
-                <div class="match-info">
-                    <div style="background:#dbeafe; width:40px; height:40px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#1e40af;">
-                        <i class="fa-regular fa-hospital" style="font-size:20px;"></i>
-                    </div>
-                    <div style="border-left:1px solid #eee; padding-left:10px;">
-                        <div style="font-weight:bold; font-size:13px;">依頼元: 山田中央総合病院</div>
-                        <div style="font-size:11px; color:#666;">患者: 高橋 様 (82歳/女性) - 退院予定: 12/20</div>
-                    </div>
-                </div>
-                <div style="text-align:right;">
-                    <div style="font-size:10px; color:#666; margin-bottom:2px;">エリア: 八王子市千人町</div>
-                    <div class="tag" style="background:#fee2e2; color:#b91c1c; margin:0;">医療保険</div>
-                    <div style="margin-top:6px; display:flex; gap:6px; justify-content:flex-end;">
-                        <button class="btn btn-xs btn-outline">詳細確認</button>
-                        <button class="btn btn-xs btn-primary">受入可</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <section id="sect-newuser" class="section">
         <div class="panel">
             <div class="panel-title"><i class="fa-solid fa-user-plus"></i> 新規利用者登録</div>
@@ -667,14 +615,6 @@ white-space: nowrap; transition:0.2s; }
                 <div class="grid-2">
                     <div><label>保険種別</label><select><option>介護保険</option><option>医療保険</option></select></div>
                     <div><label>主病名</label><input type="text" placeholder="例: 脳梗塞後遺症"></div>
-                </div>
-                <div style="margin-top:16px; padding:20px; border:2px dashed #ccc; border-radius:8px; text-align:center; background:#f9fafb;">
-                    <i class="fa-solid fa-camera" style="font-size:24px; color:#ccc; margin-bottom:8px;"></i>
-                    <div style="font-weight:bold; font-size:13px; margin-bottom:4px;">保険証画像の登録</div>
-                    <div style="font-size:11px; color:#666; margin-bottom:12px;">カメラで撮影またはアップロード</div>
-                    <label class="btn btn-sm btn-outline" style="background:white;">
-                        画像を選択 <input type="file" accept="image/*" style="display:none;">
-                    </label>
                 </div>
                 <div style="margin-top:16px; display:flex; gap:16px;">
                     <button class="btn btn-primary" style="flex:1;">登録する</button>
@@ -721,8 +661,7 @@ white-space: nowrap; transition:0.2s; }
             <div style="overflow-x:auto;">
                 <table class="micro-table">
                     <thead><tr><th>申請日</th><th>職員名</th><th>利用者名</th><th>金額</th><th>承認</th></tr></thead>
-                    <tbody id="parkingAdminTableBody">
-                        </tbody>
+                    <tbody id="parkingAdminTableBody"></tbody>
                 </table>
             </div>
         </div>
@@ -739,33 +678,23 @@ white-space: nowrap; transition:0.2s; }
 
         <div class="panel">
             <div class="panel-title">
-                <span><i class="fa-solid fa-graduation-cap"></i> HR・組織マネジメント (D-1/D-2)</span>
+                <span><i class="fa-solid fa-graduation-cap"></i> 教育レベル可視化 (JNAラダー準拠)</span>
             </div>
-            <div class="grid-2">
-                <div>
-                    <h5 style="margin:0 0 8px 0; font-size:13px;">採用進捗 (八王子ST)</h5>
-                    <div style="font-size:11px; margin-bottom:4px;">応募: 5名 / 面接中: 2名</div>
-                    <div class="progress-container"><div class="progress-bar" style="width: 40%"></div></div>
+            <div class="grid-3" id="hrCardContainer">
                 </div>
-                <div>
-                    <h5 style="margin:0 0 8px 0; font-size:13px;">教育レベル可視化</h5>
-                    <div class="grid-2" id="hrCardContainer" style="gap:8px;">
-                        </div>
-                </div>
-            </div>
         </div>
 
         <div class="panel">
             <div class="panel-title">
-                <span><i class="fa-solid fa-phone"></i> 夜間・休日オンコール & 負荷 (A-1/A-2)</span>
+                <span><i class="fa-solid fa-phone"></i> 夜間・休日オンコール (A-1)</span>
             </div>
             <div style="overflow-x:auto; margin-bottom:12px;">
                 <table class="micro-table">
-                    <thead><tr><th>氏名</th><th>月間担当回数</th><th>休日数</th><th>最大連勤</th><th>夜間状況</th></tr></thead>
+                    <thead><tr><th>氏名</th><th>月間担当回数</th><th>夜間状況</th></tr></thead>
                     <tbody>
-                        <tr><td>Ns.山田</td><td>4回 <span style="color:red">▲</span></td><td>8日</td><td>5日</td><td><span class="tag" style="background:#f3e8ff; color:#7e22ce;">本日担当</span></td></tr>
-                        <tr><td>Ns.高橋</td><td>2回</td><td>9日</td><td>4日</td><td>-</td></tr>
-                        <tr><td>PT.鈴木</td><td>0回</td><td>10日</td><td>3日</td><td>-</td></tr>
+                        <tr><td>Ns.山田</td><td>4回</td><td><span class="tag" style="background:#f3e8ff; color:#7e22ce;">本日担当</span></td></tr>
+                        <tr><td>Ns.高橋</td><td>2回</td><td>-</td></tr>
+                        <tr><td>PT.鈴木</td><td>0回</td><td>-</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -795,54 +724,53 @@ white-space: nowrap; transition:0.2s; }
                     <thead>
                         <tr>
                             <th style="width:80px; position:sticky; left:0; background:#f9fafb; z-index:10; border-right:2px solid #ddd;">氏名</th>
-                            </tr>
+                        </tr>
                     </thead>
-                    <tbody id="adminScheduleBody">
-                        </tbody>
+                    <tbody id="adminScheduleBody"></tbody>
                 </table>
             </div>
         </div>
 
         <div class="panel">
-            <div class="panel-title"><i class="fa-solid fa-people-arrows"></i> AIスマートマッチング (シフト調整)</div>
-            <div style="font-size:12px; color:#666; margin-bottom:12px;">未割り当ての訪問に対し、スキル・現在地・相性から最適スタッフを提案します。</div>
-            <div class="match-card">
-                <div class="match-info">
-                    <div style="display:flex; flex-direction:column; align-items:center;">
-                        <i class="fa-solid fa-user-clock" style="color:#ef4444; font-size:18px;"></i>
-                        <span style="font-size:10px; font-weight:bold; margin-top:4px;">明日 14:00</span>
-                    </div>
-                    <div style="border-left:1px solid #eee; padding-left:10px;">
-                        <div style="font-weight:bold; font-size:13px;">高橋 幸子 様 (新規)</div>
-                        <div style="font-size:11px; color:#666;">処置: 褥瘡ケア / 要望: 女性希望</div>
-                    </div>
-                </div>
-                <div style="text-align:right;">
-                    <div style="font-size:10px; color:#666; margin-bottom:2px;">推奨: <span class="match-score">98%一致</span></div>
-                    <div style="display:flex; align-items:center; gap:6px; justify-content:flex-end; margin-bottom:4px;">
-                        <span style="font-weight:bold; font-size:13px;">Ns. 山田</span>
-                        <div class="match-avatar">山</div>
-                    </div>
-                    <div style="font-size:10px; color:#666;">理由: 創傷認定Ns・近隣</div>
-                    <button class="btn btn-xs btn-primary" style="margin-top:4px;">確定する</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="panel">
-            <div class="panel-title">労働負荷モニタリング (週間分析)</div>
+            <div class="panel-title">労働負荷モニタリング (週間分析・休日負荷)</div>
             <div class="load-grid">
                 <div class="load-card">
                     <div class="load-header">
                         <span class="load-name">Ns.山田</span>
-                        <span class="load-score-badge score-danger">危険 (92)</span>
+                        <span class="load-score-badge score-danger">過負荷 (92)</span>
                     </div>
                     <div class="load-stat-row"><span>労働時間</span><span class="load-val">45h <span style="color:var(--danger)">(+5h)</span></span></div>
                     <div class="load-stat-row"><span>訪問件数</span><span class="load-val">28件</span></div>
                     <div class="load-stat-row"><span>移動距離</span><span class="load-val">120km</span></div>
+                    <div class="load-stat-row" style="background:#fff7ed; padding:2px 4px; border-radius:4px; margin-top:4px;"><span>休日数</span><span class="load-val text-danger">8日 (法定内)</span></div>
+                    <div class="load-stat-row" style="background:#fef2f2; padding:2px 4px; border-radius:4px;"><span>最大連勤</span><span class="load-val" style="color:#dc2626;">5日 (注意)</span></div>
                     <div class="load-bar-container"><div class="load-bar-fill" style="width:92%; background:var(--danger);"></div></div>
                 </div>
+                 <div class="load-card">
+                    <div class="load-header">
+                        <span class="load-name">Ns.高橋</span>
+                        <span class="load-score-badge score-success">適正 (65)</span>
+                    </div>
+                    <div class="load-stat-row"><span>労働時間</span><span class="load-val">38h</span></div>
+                    <div class="load-stat-row"><span>訪問件数</span><span class="load-val">22件</span></div>
+                    <div class="load-stat-row"><span>移動距離</span><span class="load-val">80km</span></div>
+                    <div class="load-stat-row"><span>休日数</span><span class="load-val">9日</span></div>
+                    <div class="load-stat-row"><span>最大連勤</span><span class="load-val">4日</span></div>
+                    <div class="load-bar-container"><div class="load-bar-fill" style="width:65%; background:var(--success);"></div></div>
                 </div>
+                 <div class="load-card">
+                    <div class="load-header">
+                        <span class="load-name">PT.鈴木</span>
+                        <span class="load-score-badge score-warning">注意 (78)</span>
+                    </div>
+                    <div class="load-stat-row"><span>労働時間</span><span class="load-val">41h</span></div>
+                    <div class="load-stat-row"><span>訪問件数</span><span class="load-val">25件</span></div>
+                    <div class="load-stat-row"><span>移動距離</span><span class="load-val">100km</span></div>
+                    <div class="load-stat-row"><span>休日数</span><span class="load-val">8日</span></div>
+                    <div class="load-stat-row"><span>最大連勤</span><span class="load-val">5日</span></div>
+                    <div class="load-bar-container"><div class="load-bar-fill" style="width:78%; background:var(--warning);"></div></div>
+                </div>
+            </div>
         </div>
 
         <div class="panel" style="background:#1e1e1e; border-color:#333;">
@@ -852,7 +780,6 @@ white-space: nowrap; transition:0.2s; }
             <div class="terminal-window">
                 <div class="log-line"><span class="log-time">10:22:01</span><span class="log-type">[INFO]</span><span class="log-msg">Orchestrator: Polling external EMR (Vendor:Fujitsu)...</span></div>
                 <div class="log-line"><span class="log-time">10:22:05</span><span class="log-type">[SUCCESS]</span><span class="log-msg">Data fetch complete. 3 new patient records found.</span></div>
-                <div class="log-line"><span class="log-time">10:23:15</span><span class="log-type">[SUCCESS]</span><span class="log-msg">Resource [Patient/00123] updated via API.</span></div>
             </div>
         </div>
     </section>
@@ -867,7 +794,64 @@ const omahaMaster = {
     "健康関連行動 (Health Behaviors)": ["栄養", "睡眠/休息", "身体活動", "身の回りの世話(ADL)", "個人のケア", "物質乱用", "家族計画", "医療的・看護的ケア", "服薬管理"]
 };
 
-// Mock Database (Extended)
+// Billing Rules with Definitions
+const billingRules = [
+    { 
+        name: "緊急時訪問看護加算", 
+        point: 540, 
+        desc: "利用者や家族の求めに応じ、24時間連絡体制を確保し、計画外の緊急訪問を行う体制がある場合に算定。月1回。"
+    },
+    { 
+        name: "特別管理加算(II)", 
+        point: 250, 
+        desc: "真皮を越える褥瘡、点滴注射の管理、人工肛門等の管理を必要とする状態にある利用者に対して算定。月1回。"
+    },
+    { 
+        name: "退院時共同指導加算", 
+        point: 600, 
+        desc: "退院時に病院等の主治医等と共同して指導を行った場合に、初回訪問時に算定。" 
+    },
+    { 
+        name: "リハビリテーションマネジメント加算", 
+        point: 230,
+        desc: "PT/OT/STが医師の指示に基づき、計画的なリハビリテーションを実施・評価した場合に算定。"
+    },
+    {
+        name: "ターミナルケア加算",
+        point: 2000,
+        desc: "死亡日および死亡日前14日以内に2回以上訪問し、ターミナルケアを行った場合に算定。"
+    }
+];
+
+// Feature D-2: Staff DB (Clincal Ladder Based)
+const staffDatabase = [
+    { 
+        name: "Ns.山田", 
+        role: "管理者 / 訪問看護認定", 
+        level: "IV", 
+        desc: "ロールモデルとして幅広い視野で予測的判断を持ち、実践できる。",
+        metrics: { autonomy: "完全自立", complex: "対応可" },
+        nextGoal: "組織全体の教育体制構築と地域連携の深化"
+    },
+    { 
+        name: "Ns.高橋", 
+        role: "スタッフ / 実践リーダー", 
+        level: "III", 
+        desc: "ケアの受け手に合う個別的な看護を実践し、リーダー業務を担える。",
+        metrics: { autonomy: "自立", complex: "助言下で可" },
+        nextGoal: "学生指導および複雑事例への対応力強化"
+    },
+    { 
+        name: "PT.鈴木", 
+        role: "理学療法士", 
+        level: "III", 
+        desc: "標準的なリハビリ計画に基づき自立して実践し、他職種と連携できる。",
+        metrics: { autonomy: "自立", complex: "連携必須" },
+        nextGoal: "呼吸リハビリテーション認定資格の取得"
+    }
+];
+
+// Mock Database
 const patientDatabase = {
     1: { 
         name: "田中 太郎",
@@ -907,19 +891,11 @@ const patientDatabase = {
     }
 };
 
-// Mock Parking Data for Admin Dashboard
 const parkingRecords = [
     { date: "12/19", staff: "Ns.山田", patient: "佐藤 花子", amount: 400 },
     { date: "12/18", staff: "PT.鈴木", patient: "鈴木 一郎", amount: 600 },
     { date: "12/18", staff: "Ns.山田", patient: "田中 太郎", amount: 400 },
     { date: "12/17", staff: "Ns.高橋", patient: "佐藤 花子", amount: 400 }
-];
-
-// Feature D-2: Staff DB
-const staffDatabase = [
-    { name: "Ns.山田", level: 5, skills: ["創傷", "ターミナル"] },
-    { name: "Ns.高橋", level: 3, skills: ["認知症", "排泄"] },
-    { name: "PT.鈴木", level: 4, skills: ["脳血管", "呼吸リハ"] }
 ];
 
 // --- Login & Utils ---
@@ -937,7 +913,7 @@ function setTab(id) {
     document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
     document.getElementById('sect-' + id).classList.add('active');
-    const tabMap = {'home':0, 'calendar':1, 'record':2, 'collab':3, 'newuser':4, 'admin':5};
+    const tabMap = {'home':0, 'calendar':1, 'record':2, 'newuser':3, 'admin':4};
     const tabs = document.querySelectorAll('.tab');
     if(tabs[tabMap[id]]) tabs[tabMap[id]].classList.add('active');
     if(id === 'home') loadHomeMemo();
@@ -945,11 +921,11 @@ function setTab(id) {
     if(id === 'record') { if(!myChart) setTimeout(initChart, 100); switchPatient(); }
     if(id === 'admin') { 
         setTimeout(renderMap, 100); 
-        loadAdminMemo(); // E-1
-        renderBillingAdmin(); // B-1
-        renderHRCards(); // D-2
-        render24HSchedule(); // New A-1
-        renderParkingDashboard(); // New Parking
+        loadAdminMemo(); 
+        renderBillingAdmin(); 
+        renderHRCards(); 
+        render24HSchedule(); 
+        renderParkingDashboard(); 
     }
 }
 function toggleAdminMode() { 
@@ -1028,13 +1004,36 @@ function goToPatient(id) { document.getElementById('patientSelector').value = id
 function enableEdit(id) { const el = document.getElementById(id); el.contentEditable = "true"; el.focus(); el.style.backgroundColor = "#fff"; el.style.border = "1px solid var(--primary)"; el.onblur = function() { el.contentEditable = "false"; el.style.backgroundColor = ""; el.style.border = "transparent"; }; }
 function speakSummary() { const u = new SpeechSynthesisUtterance(document.getElementById('aiSummaryText').innerText); u.lang = "ja-JP"; speechSynthesis.speak(u); }
 
-// Billing
-const billingRules = [{ name: "緊急時訪問看護加算", point: 540 }, { name: "特別管理加算(II)", point: 250 }];
-function initBilling() { const list = document.getElementById('billingSuggestionList'); list.innerHTML = ""; billingRules.forEach(r => { list.innerHTML += `<div class="billing-rec"><input type="checkbox" checked onchange="calcBilling()" data-p="${r.point}"><div class="billing-content"><div class="billing-title"><span>${r.name}</span><span>+${r.point*10}円</span></div></div></div>`; }); calcBilling(); }
+// Billing with Description Toggle
+function initBilling() { 
+    const list = document.getElementById('billingSuggestionList'); list.innerHTML = ""; 
+    billingRules.forEach((r, idx) => { 
+        list.innerHTML += `
+        <div class="billing-rec">
+            <div class="billing-row-main">
+                <input type="checkbox" checked onchange="calcBilling()" data-p="${r.point}">
+                <div class="billing-content">
+                    <div class="billing-title">
+                        <span>${r.name}</span><span>+${r.point*10}円</span>
+                    </div>
+                </div>
+            </div>
+            <div style="font-size:10px; margin-left:26px;">
+                <span class="billing-desc-toggle" onclick="toggleBillingDesc('rec-desc-${idx}')">要件・定義を表示</span>
+                <div id="rec-desc-${idx}" class="billing-desc">${r.desc}</div>
+            </div>
+        </div>`; 
+    }); 
+    calcBilling(); 
+}
+function toggleBillingDesc(id) {
+    const el = document.getElementById(id);
+    el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+}
+
 function calcBilling() { let total = 5550; document.querySelectorAll('#billingSuggestionList input:checked').forEach(e => { total += parseInt(e.dataset.p) * 10; }); document.getElementById('billingGrandTotal').innerText = total.toLocaleString() + " 円"; }
 
 function toggleTreatment(name) { const ta = document.getElementById('aiInputMemo'); if(!ta.value.includes(name)) ta.value += (ta.value ? " " : "") + name + "実施。"; }
-function sendChatImage(input) { if(input.files[0]) { const area = document.getElementById('chatArea'); area.innerHTML += `<div class="chat-row me"><div class="chat-bubble">画像送信</div></div>`; area.scrollTop = area.scrollHeight; input.value = ""; } }
 
 // Family Report
 function generateFamilyReport() {
@@ -1065,18 +1064,15 @@ function loadPrevKBS() {
     document.getElementById('input_k').value = baseK; document.getElementById('input_b').value = baseB; document.getElementById('input_s').value = baseS;
 }
 function saveRecord() {
-    // Feature C-2: Parking Fee Nudge
     if(confirm("【実務ナッジ】\nこの訪問で有料駐車場は利用しましたか？\n\nOK=はい、利用した\nキャンセル=いいえ")) {
         const fee = prompt("駐車料金を入力してください(円)", "400");
         if(fee) alert(`${fee}円を立替経費に保存しました。`);
     } else {
-        // もし未入力フラグを立てたい場合はここで処理
-        document.getElementById('parkingNudge').style.display = "flex"; // デモ用
+        document.getElementById('parkingNudge').style.display = "flex"; 
     }
 
     const pid = document.getElementById('patientSelector').value;
     const memo = document.getElementById('aiInputMemo').value;
-    // ... Save Logic (Existing)
     const newK = parseInt(document.getElementById('input_k').value); const newB = parseInt(document.getElementById('input_b').value); const newS = parseInt(document.getElementById('input_s').value);
     
     patientDatabase[pid].omahaScores.k.push(newK); patientDatabase[pid].omahaScores.k.shift();
@@ -1089,7 +1085,6 @@ function saveRecord() {
     alert("保存完了しました。");
     document.getElementById('aiInputMemo').value = "";
     
-    // Stop Timer
     isVisiting = false; clearInterval(visitTimerInterval);
     document.getElementById('visitTimerWidget').style.display = "none";
     document.getElementById('visitToggleBtn').innerText = "訪問開始";
@@ -1137,8 +1132,6 @@ function renderMap() {
 function addTodo() { document.getElementById('todoList').innerHTML += `<label class="todo-item"><input type="checkbox" onclick="toggleTodo(this)"><span>新規タスク</span></label>`; }
 function toggleTodo(el) { el.parentElement.classList.toggle('completed', el.checked); }
 
-// --- New Features Logic ---
-
 // Feature: Home Screen Memo
 function saveHomeMemo() { localStorage.setItem('homeMemo', document.getElementById('homeMemo').value); }
 function loadHomeMemo() { const m = localStorage.getItem('homeMemo'); if(m) document.getElementById('homeMemo').value = m; }
@@ -1174,14 +1167,13 @@ function toggleVisitTimer() {
             const s = visitSeconds % 60;
             document.getElementById('visitTimerText').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
             
-            // Feature B-2 Alert Logic
             if(visitSeconds === 1740) { // 29 min
                  widget.classList.add('timer-red');
                  alert("【加算アラート】\nまもなく30分経過します。算定要件を満たします。");
             }
         }, 1000);
     } else {
-        saveRecord(); // Ends via save logic
+        saveRecord(); 
     }
 }
 
@@ -1203,16 +1195,25 @@ function renderParkingDashboard() {
     });
 }
 
-// Feature B-1: Admin Billing List (Enhanced UI)
+// Feature B-1: Admin Billing List with Desc
 function renderBillingAdmin() {
     const el = document.getElementById('adminBillingList'); el.innerHTML = "";
-    Object.values(patientDatabase).forEach(p => {
+    Object.values(patientDatabase).forEach((p, pIdx) => {
         let rows = "";
-        p.billingProps.forEach(b => {
+        p.billingProps.forEach((b, bIdx) => {
+            const rule = billingRules.find(r => r.name === b.name);
+            const desc = rule ? rule.desc : "説明なし";
+            const rowId = `admin-bill-desc-${pIdx}-${bIdx}`;
             rows += `
             <div class="billing-item-row">
-                <input type="checkbox" ${b.checked ? 'checked' : ''} style="width:14px; height:14px; margin:0;">
-                <span style="flex:1;">${b.name}</span>
+                <div class="billing-item-head">
+                    <input type="checkbox" ${b.checked ? 'checked' : ''} style="width:14px; height:14px; margin:0;">
+                    <span style="flex:1;">${b.name}</span>
+                </div>
+                <div style="padding-left:22px;">
+                     <span class="billing-desc-toggle" onclick="toggleBillingDesc('${rowId}')">要件・定義</span>
+                     <div id="${rowId}" class="billing-desc">${desc}</div>
+                </div>
             </div>`;
         });
         el.innerHTML += `
@@ -1226,16 +1227,33 @@ function renderBillingAdmin() {
     });
 }
 
-// Feature D-2: HR Cards
+// Feature D-2: HR Cards (Clinical Ladder Based)
 function renderHRCards() {
     const el = document.getElementById('hrCardContainer'); el.innerHTML = "";
     staffDatabase.forEach(s => {
-        const stars = '<i class="fa-solid fa-star"></i>'.repeat(s.level);
-        const skills = s.skills.map(sk => `<span class="skill-badge">${sk}</span>`).join('');
         el.innerHTML += `
-        <div class="hr-card">
-            <div class="flex-between"><span style="font-weight:bold; font-size:13px;">${s.name}</span><span class="level-stars">${stars}</span></div>
-            <div style="display:flex; flex-wrap:wrap; gap:4px;">${skills}</div>
+        <div class="hr-ladder-card">
+            <div class="hr-header">
+                <div style="display:flex; align-items:center;">
+                    <div class="hr-avatar">${s.name.charAt(3)}</div>
+                    <div class="hr-name-box">
+                        <span class="hr-name">${s.name}</span>
+                        <span class="hr-role">${s.role}</span>
+                    </div>
+                </div>
+                <div class="ladder-level-box">
+                    <span class="ladder-label">ラダーレベル</span>
+                    <span class="ladder-level">Lv.${s.level}</span>
+                </div>
+            </div>
+            <div style="font-size:11px; color:#4b5563; line-height:1.4;">${s.desc}</div>
+            <div class="hr-metrics">
+                <div class="hr-metric-item"><span>自律性:</span><span class="hr-metric-val">${s.metrics.autonomy}</span></div>
+                <div class="hr-metric-item"><span>複雑事例:</span><span class="hr-metric-val">${s.metrics.complex}</span></div>
+            </div>
+            <div class="hr-next-goal">
+                <b><i class="fa-solid fa-bullseye"></i> Next Goal:</b><br>${s.nextGoal}
+            </div>
         </div>`;
     });
 }
@@ -1244,60 +1262,48 @@ function renderHRCards() {
 function render24HSchedule() {
     const thead = document.querySelector('#adminScheduleTable thead tr');
     const tbody = document.getElementById('adminScheduleBody');
-    if(thead.children.length > 1) return; // Already rendered
+    if(thead.children.length > 1) return; 
 
-    // 1. Render Headers (08:00 to 08:00 next day for 24H view)
     let headerHtml = '<th style="width:80px; position:sticky; left:0; background:#f9fafb; z-index:10; border-right:2px solid #ddd;">氏名</th>';
-    const hours = [];
-    for(let i=8; i<32; i++) { // 8 to 32 (next day 8)
+    for(let i=8; i<32; i++) { 
         let h = i % 24;
         let display = `${h}:00`;
-        hours.push(h);
         headerHtml += `<th colspan="2" style="border-right:1px solid #ddd;">${display}</th>`;
     }
     thead.innerHTML = headerHtml;
 
-    // 2. Render Body
-    // Helper to calc colspan position: index 0 = 8:00. Each hour has 2 slots (30min).
-    // Target: Ns.Yamada (id=row_yamada)
-    // 09:00 Tanaka (2 slots), 13:00 Suzuki (2 slots), 18:00 OnCall
-    
-    // Row 1: Ns.Yamada
     let row1 = `<tr><td style="font-weight:bold; font-size:12px; padding-left:4px; position:sticky; left:0; background:#fff; z-index:10; border-right:2px solid #ddd;">Ns.山田</td>`;
-    for(let i=0; i<48; i++) { // 48 slots (24h * 2)
-        // 0=08:00, 1=08:30, 2=09:00
+    for(let i=0; i<48; i++) { 
         let content = "";
         let idAttr = "";
         let colspan = 1;
         
-        // Schedule Definition
-        if(i===2) { content = '<div class="time-slot ts-visit">田中様</div>'; colspan=2; } // 09:00-10:00
-        else if(i===3) { content=""; } // skipped by colspan
+        if(i===2) { content = '<div class="time-slot ts-visit">田中様</div>'; colspan=2; } 
+        else if(i===3) { content=""; } 
         
-        else if(i===10) { content = '<div class="time-slot ts-visit" id="slot_yamada_suzuki">鈴木様</div>'; colspan=2; idAttr='id="td_yamada_1300"'; } // 13:00-14:00 (Optimization Target)
+        else if(i===10) { content = '<div class="time-slot ts-visit" id="slot_yamada_suzuki">鈴木様</div>'; colspan=2; idAttr='id="td_yamada_1300"'; } 
         else if(i===11) { content=""; }
         
-        else if(i===12) { content = ''; idAttr='id="td_yamada_1400"'; } // 14:00 (Optimization Destination)
+        else if(i===12) { content = ''; idAttr='id="td_yamada_1400"'; } 
         
-        else if(i===20) { content = '<div class="time-slot ts-oncall">待機(夜)</div>'; colspan=12; } // 18:00-24:00 (Visual simpl.)
+        else if(i===20) { content = '<div class="time-slot ts-oncall">待機(夜)</div>'; colspan=12; } 
         else if(i>20 && i<32) { content=""; }
 
         if(content !== undefined && content !== "") row1 += `<td colspan="${colspan}" ${idAttr}>${content}</td>`;
-        else if(content === "") { /* skipped */ }
+        else if(content === "") { }
         else row1 += `<td></td>`;
     }
     row1 += "</tr>";
 
-    // Row 2: PT.Suzuki
     let row2 = `<tr><td style="font-weight:bold; font-size:12px; padding-left:4px; position:sticky; left:0; background:#fff; z-index:10; border-right:2px solid #ddd;">PT.鈴木</td>`;
     for(let i=0; i<48; i++) {
         let content = undefined;
         let colspan = 1;
-        if(i===6) { content = '<div class="time-slot ts-visit" style="background:#fef9c3; border-color:#fde047; color:#854d0e;">リハビリ</div>'; colspan=3; } // 11:00-12:30
+        if(i===6) { content = '<div class="time-slot ts-visit" style="background:#fef9c3; border-color:#fde047; color:#854d0e;">リハビリ</div>'; colspan=3; } 
         else if(i>6 && i<9) { content=""; }
         
         if(content !== undefined && content !== "") row2 += `<td colspan="${colspan}">${content}</td>`;
-        else if(content === "") { /* skipped */ }
+        else if(content === "") { }
         else row2 += `<td></td>`;
     }
     row2 += "</tr>";
@@ -1305,13 +1311,12 @@ function render24HSchedule() {
     tbody.innerHTML = row1 + row2;
 }
 
-// Feature A-3: Optimization Simulation (Concrete Feedback)
+// Feature A-3: Optimization Simulation
 function runOptimization() {
     const btn = document.querySelector('#adminMap + div button');
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 計算中...';
     
     setTimeout(() => {
-        // 1. Text Feedback
         const resBox = document.getElementById('optResult');
         resBox.innerHTML = `
             <strong><i class="fa-solid fa-check"></i> 最適化完了</strong><br>
@@ -1320,24 +1325,17 @@ function runOptimization() {
         `;
         resBox.style.display = 'block';
 
-        // 2. Update Schedule Visual (Demo)
-        const oldCell = document.getElementById('td_yamada_1300'); // 13:00 cell
-        const newCell = document.getElementById('td_yamada_1400'); // 14:00 cell
+        const oldCell = document.getElementById('td_yamada_1300'); 
+        const newCell = document.getElementById('td_yamada_1400'); 
         
         if(oldCell && newCell) {
-            // Move the div
             const slotDiv = document.getElementById('slot_yamada_suzuki');
             if(slotDiv) {
                 slotDiv.classList.add('highlight-change');
-                // Remove from old, add to new. Note: table logic is tricky with colspan, 
-                // but for this specific demo, we simply swap HTML content for visual effect.
                 oldCell.innerHTML = ""; 
-                oldCell.removeAttribute('colspan'); // Reset simple
-                
+                oldCell.removeAttribute('colspan'); 
                 newCell.setAttribute('colspan', '2');
                 newCell.innerHTML = '<div class="time-slot ts-visit highlight-change">鈴木様</div>';
-                
-                // Adjust next cell (since we added colspan=2) - strictly for valid HTML in demo
                 if(newCell.nextElementSibling) newCell.nextElementSibling.style.display = 'none';
             }
         }
