@@ -1150,28 +1150,53 @@ function performCopy() {
     const soap = document.getElementById('soapArea').innerText;
     const textToCopy = `【看護診断】\n${diag}\n\n【SOAP】\n${soap}`;
     
-    navigator.clipboard.writeText(textToCopy).then(() => {
-        const btn = document.getElementById('secureCopyBtn');
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> コピー完了';
-        btn.style.background = '#dcfce7';
-        btn.style.color = '#15803d';
-        btn.style.borderColor = '#86efac';
-        
-        // Flash Effect
-        document.getElementById('diagnosisArea').classList.add('scan-flash');
-        document.getElementById('soapArea').classList.add('scan-flash');
-        setTimeout(() => {
-            document.getElementById('diagnosisArea').classList.remove('scan-flash');
-            document.getElementById('soapArea').classList.remove('scan-flash');
-        }, 1000);
-        
-        // Toast Notification (Updated)
-        const toast = document.getElementById('copyToast');
-        toast.classList.add('show');
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 3000);
-    });
+    // Fallback copy logic
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showToast();
+        }).catch(err => {
+            console.error('Copy failed, using fallback', err);
+            fallbackCopyText(textToCopy);
+        });
+    } else {
+        fallbackCopyText(textToCopy);
+    }
+    
+    const btn = document.getElementById('secureCopyBtn');
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> コピー完了';
+    btn.style.background = '#dcfce7';
+    btn.style.color = '#15803d';
+    btn.style.borderColor = '#86efac';
+    
+    document.getElementById('diagnosisArea').classList.add('scan-flash');
+    document.getElementById('soapArea').classList.add('scan-flash');
+    setTimeout(() => {
+        document.getElementById('diagnosisArea').classList.remove('scan-flash');
+        document.getElementById('soapArea').classList.remove('scan-flash');
+    }, 1000);
+}
+
+function fallbackCopyText(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        showToast();
+    } catch (err) {
+        console.error('Fallback copy failed', err);
+    }
+    document.body.removeChild(textArea);
+}
+
+function showToast() {
+    const toast = document.getElementById('copyToast');
+    toast.classList.add('show');
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
 }
 
 function resetCopyButton() {
