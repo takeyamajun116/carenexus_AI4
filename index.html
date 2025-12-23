@@ -574,6 +574,7 @@ white-space: nowrap; transition:0.2s; }
                         <div id="soapArea" class="editable-area" style="font-size:12px; white-space:pre-wrap;"></div>
                     </div>
                     
+                    <p style="font-size:10px; color:#6b7280; margin-top:8px; margin-bottom:4px;">※本機能により生成される看護診断・SOAPは参考情報であり、最終的な判断および記録の責任は看護師に帰属します。</p>
                     <div class="btn-copy-wrapper" id="copyWrapper" style="display:none;">
                         <div class="btn-copy-progress" id="copyProgress"></div>
                         <button class="btn btn-copy-locked" id="secureCopyBtn">
@@ -1052,10 +1053,11 @@ function runAIGeneration() {
         
         // Structured HTML with "verify-needed" span class
         const diagnosisHTML = "<span class='tag'>#皮膚(生理)</span> <span class='verify-needed' onclick='verifyWord(this)'>皮膚統合性障害リスク</span>";
-        const soapHTML = `[S] 「<span class='verify-needed' onclick='verifyWord(this)'>良くなってる</span>」
-[O] <span class='verify-needed' onclick='verifyWord(this)'>36.6℃</span>, <span class='verify-needed' onclick='verifyWord(this)'>創部良化</span>
-[A] 順調。経過観察継続。
-[P] <span class='verify-needed' onclick='verifyWord(this)'>洗浄・ワセリン塗布</span>継続。`;
+        // UPDATED: Long text with verification highlights
+        const soapHTML = `[S] 「<span class='verify-needed' onclick='verifyWord(this)'>前回より良くなっている</span>感じがする。痛みもほとんど気にならない」との発言あり。
+[O] 体温<span class='verify-needed' onclick='verifyWord(this)'>36.6℃</span>と平熱。発熱兆候なし。創部は<span class='verify-needed' onclick='verifyWord(this)'>発赤・腫脹なく</span>、滲出液も認められず<span class='verify-needed' onclick='verifyWord(this)'>乾燥良好</span>。創縁の離開なく、肉芽形成は良好で治癒過程は順調。周囲皮膚のトラブル（発疹・浸軟）も認められない。全身状態は安定しており、バイタルサインに大きな変動なし。
+[A] 創部は<span class='verify-needed' onclick='verifyWord(this)'>感染兆候なく</span>、計画どおり良好な治癒経過をたどっている。本人の自覚症状も改善傾向であり、セルフケアの理解・実施状況も問題なし。現時点で新たな看護問題は認められない。
+[P] 現在の<span class='verify-needed' onclick='verifyWord(this)'>処置・観察を継続</span>する。創部状態の変化（発赤・疼痛・滲出液増加など）について、引き続き本人・家族へ説明と注意喚起を行う。次回訪問時も創部および全身状態を評価し、必要に応じて対応を検討する。`;
 
         document.getElementById('diagnosisArea').innerHTML = diagnosisHTML;
         document.getElementById('soapArea').innerHTML = soapHTML;
@@ -1149,6 +1151,9 @@ function performCopy() {
             document.getElementById('diagnosisArea').classList.remove('scan-flash');
             document.getElementById('soapArea').classList.remove('scan-flash');
         }, 1000);
+        
+        // Added Alert
+        alert("コピーしました。");
     });
 }
 
