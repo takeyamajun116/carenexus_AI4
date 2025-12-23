@@ -6,6 +6,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
 /* ========== Base Design (Unchanged) ========== */
 :root { 
@@ -93,6 +95,7 @@ white-space: nowrap; transition:0.2s; }
 .evt-visit { background: var(--primary); }
 .evt-mtg { background: var(--warning); }
 
+/* Load Grid */
 .load-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
 .load-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; }
 .load-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
@@ -247,6 +250,7 @@ white-space: nowrap; transition:0.2s; }
 }
 .toast-notification.show { opacity: 1; bottom: 50px; }
 
+/* Hub Monitor & Map CSS removed */
 </style>
 </head>
 <body>
@@ -886,9 +890,23 @@ const patientDatabase = {
         omahaScores: { k: [2,2,3,3,3], b: [3,3,3,4,4], s: [2,2,3,3,3] },
         parking: "https://maps.google.com/?q=parking+hachioji",
         billingProps: [
-            {name: "特別管理加算(II)", checked: true},
-            {name: "緊急時訪問看護加算", checked: true},
-            {name: "ターミナルケア加算", checked: false}
+            {name: "特別管理加算(II)", checked: true, reason: [
+                {type:"sb-change", text:"✔ 褥瘡記録あり(真皮越え)"}, 
+                {type:"sb-change", text:"✔ 医師指示書確認済"}
+            ]},
+            {name: "緊急時訪問看護加算", checked: true, reason: [
+                {type:"sb-change", text:"✔ 24時間連絡体制"}, 
+                {type:"sb-change", text:"✔ 緊急対応ログあり"}
+            ]},
+            {name: "退院時共同指導加算", checked: false, reason: [
+                {type:"sb-ng", text:"退院時指導の記録なし"}
+            ]},
+            {name: "リハビリテーションマネジメント加算", checked: false, reason: [
+                {type:"sb-alert", text:"実施時間不足(15分)"}
+            ]},
+            {name: "ターミナルケア加算", checked: false, reason: [
+                {type:"sb-ng", text:"要件未達"}
+            ]}
         ]
     },
     2: { 
@@ -903,7 +921,7 @@ const patientDatabase = {
         omahaScores: { k: [2,2,2,3,3], b: [2,2,3,3,3], s: [3,3,3,3,3] },
         parking: "https://maps.google.com/?q=parking+hachioji",
         billingProps: [
-            {name: "緊急時訪問看護加算", checked: true}
+            {name: "緊急時訪問看護加算", checked: true, reason: [{type:"sb-change", text:"✔ 要件満たす"}]}
         ]
     },
     3: { 
@@ -918,8 +936,8 @@ const patientDatabase = {
         omahaScores: { k: [4,4,4,5,5], b: [4,4,5,5,5], s: [3,3,4,4,4] },
         parking: "https://maps.google.com/?q=parking+hachioji",
         billingProps: [
-            {name: "退院時共同指導加算", checked: true},
-            {name: "リハビリテーションマネジメント加算", checked: true}
+            {name: "退院時共同指導加算", checked: true, reason: [{type:"sb-change", text:"✔ 指導記録あり"}]},
+            {name: "リハビリテーションマネジメント加算", checked: true, reason: [{type:"sb-change", text:"✔ 計画書作成済"}]}
         ]
     }
 };
@@ -1194,23 +1212,45 @@ function speakSummary() {
     const u = new SpeechSynthesisUtterance(txt); u.lang = "ja-JP"; speechSynthesis.speak(u); 
 }
 
-// Billing with Description Toggle
+// Updated Billing Logic
 function initBilling() { 
     const list = document.getElementById('billingSuggestionList'); list.innerHTML = ""; 
-    billingRules.forEach((r, idx) => { 
+    const pid = document.getElementById('patientSelector').value;
+    const patientData = patientDatabase[pid];
+
+    patientData.billingProps.forEach((b, idx) => {
+        const rule = billingRules.find(r => r.name === b.name);
+        const desc = rule ? rule.desc : "説明なし";
+        const rowId = `rec-desc-${idx}`;
+        
+        let reasonsHtml = "";
+        if(b.reason) {
+            b.reason.forEach(r => {
+                // Inline styles to match design without new CSS
+                const style = "padding: 4px 8px; font-size: 11px; border-bottom:none; margin-top:2px; border-radius:4px;";
+                reasonsHtml += `<div class="sb-row ${r.type}" style="${style}">${r.text}</div>`;
+            });
+        }
+
+        const isChecked = b.checked ? "checked" : "";
+        const isDisabled = (!b.checked) ? "disabled" : ""; // Simple logic for demo
+
         list.innerHTML += `
         <div class="billing-rec">
-            <div class="billing-row-main">
-                <input type="checkbox" checked onchange="calcBilling()" data-p="${r.point}">
+            <div class="billing-row-main" style="align-items:flex-start;">
+                <div style="display:flex; align-items:center; height:100%;">
+                    <input type="checkbox" ${isChecked} ${isDisabled} onchange="calcBilling()" data-p="${rule ? rule.point : 0}">
+                </div>
                 <div class="billing-content">
                     <div class="billing-title">
-                        <span>${r.name}</span><span>+${r.point*10}円</span>
+                        <span>${b.name}</span><span>+${rule ? rule.point*10 : 0}円</span>
                     </div>
+                    <div style="margin-top:4px;">${reasonsHtml}</div>
                 </div>
             </div>
             <div style="font-size:10px; margin-left:26px;">
-                <span class="billing-desc-toggle" onclick="toggleBillingDesc('rec-desc-${idx}')">要件・定義を表示</span>
-                <div id="rec-desc-${idx}" class="billing-desc">${r.desc}</div>
+                <span class="billing-desc-toggle" onclick="toggleBillingDesc('${rowId}')">要件・定義を表示</span>
+                <div id="${rowId}" class="billing-desc">${desc}</div>
             </div>
         </div>`; 
     }); 
