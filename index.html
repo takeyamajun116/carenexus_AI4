@@ -6,8 +6,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
 /* ========== Base Design (Unchanged) ========== */
 :root { 
@@ -94,11 +92,6 @@ white-space: nowrap; transition:0.2s; }
 .cal-event { display: block; font-size: 10px; padding: 2px 4px; border-radius: 3px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: white; }
 .evt-visit { background: var(--primary); }
 .evt-mtg { background: var(--warning); }
-
-/* Admin Map & Load */
-.map-container { position: relative; height: 350px; width: 100%; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); z-index: 1; }
-.custom-pin { display: flex; justify-content: center; align-items: center; width: 32px !important; height: 32px !important; background: transparent; border: none; }
-.custom-pin i { font-size: 28px; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3)); transition: transform 0.2s; }
 
 .load-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
 .load-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; }
@@ -200,13 +193,6 @@ white-space: nowrap; transition:0.2s; }
 .ts-oncall { background: #f3e8ff; border-color: #d8b4fe; color: #7e22ce; font-weight:bold; }
 .highlight-change { animation: flashGreen 2s infinite; border: 2px solid #10b981; }
 @keyframes flashGreen { 0% { background-color: #dcfce7; } 50% { background-color: #86efac; } 100% { background-color: #dcfce7; } }
-
-/* Hub Monitor */
-.terminal-window { background: #1e1e1e; color: #00ff00; font-family: 'Courier New', monospace; padding: 12px; border-radius: 6px; height: 200px; overflow-y: auto; font-size: 11px; line-height: 1.4; border: 1px solid #333; }
-.log-line { display: flex; gap: 10px; border-bottom: 1px solid #333; padding: 2px 0; }
-.log-time { color: #888; min-width: 70px; }
-.log-type { color: #0ff; font-weight: bold; min-width: 60px; }
-.log-msg { color: #cfc; }
 
 /* === New Styles for HR & Optimization === */
 .hr-ladder-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; }
@@ -800,16 +786,6 @@ white-space: nowrap; transition:0.2s; }
                     <div class="load-stat-row"><span>最大連勤</span><span class="load-val">5日</span></div>
                     <div class="load-bar-container"><div class="load-bar-fill" style="width:78%; background:var(--warning);"></div></div>
                 </div>
-            </div>
-        </div>
-
-        <div class="panel" style="background:#1e1e1e; border-color:#333;">
-            <div class="panel-title" style="color:#10b981; border-bottom:1px solid #333;">
-                <i class="fa-solid fa-network-wired"></i> CareNexus Hub Monitor
-            </div>
-            <div class="terminal-window">
-                <div class="log-line"><span class="log-time">10:22:01</span><span class="log-type">[INFO]</span><span class="log-msg">Orchestrator: Polling external EMR (Vendor:Fujitsu)...</span></div>
-                <div class="log-line"><span class="log-time">10:22:05</span><span class="log-type">[SUCCESS]</span><span class="log-msg">Data fetch complete. 3 new patient records found.</span></div>
             </div>
         </div>
     </section>
