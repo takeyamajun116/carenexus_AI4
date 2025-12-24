@@ -775,6 +775,11 @@ white-space: nowrap; transition:0.2s; }
         </div>
 
         <div class="panel">
+            <div class="panel-title">スタッフ動態管理マップ</div>
+            <div class="map-container" id="adminMap"></div>
+        </div>
+
+        <div class="panel">
             <div class="panel-title">
                 <span>全職員スケジュール (本日 24H)</span>
                 <button class="btn btn-sm btn-outline"><i class="fa-solid fa-pen"></i> 編集</button>
@@ -1383,7 +1388,7 @@ function switchPatient() {
         if(data.isTerminalCare) badgesHtml += '<span class="patient-badge badge-term">ターミナル</span>';
         badgeArea.innerHTML = badgesHtml;
 
-        // AI Structured Summary (Keep existing logic)
+        // AI Structured Summary
         const sumContainer = document.getElementById('aiSummaryContainer');
         sumContainer.innerHTML = `<div class="summary-box-structured"></div>`;
         const box = sumContainer.querySelector('.summary-box-structured');
@@ -1727,6 +1732,17 @@ function render24HSchedule() {
     ];
 
     tbody.innerHTML = createRow("Ns.山田", yamadaSch) + createRow("Ns.高橋", takahashiSch) + createRow("PT.鈴木", suzukiSch);
+}
+
+function renderMap() {
+    if(document.getElementById('adminMap').innerHTML.trim() !== "") return;
+    const map = L.map('adminMap').setView([35.6581, 139.3303], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
+    const icons = { staff: L.divIcon({className:'custom-pin', html:'<i class="fa-solid fa-user-nurse" style="color:var(--primary)"></i>'}), patient: L.divIcon({className:'custom-pin', html:'<i class="fa-solid fa-house-chimney-medical" style="color:var(--danger)"></i>'}) };
+    L.marker([35.6581, 139.3303], {icon: icons.staff}).addTo(map).bindPopup("Ns.山田: 移動中");
+    L.marker([35.6600, 139.3400], {icon: icons.staff}).addTo(map).bindPopup("PT.鈴木: 訪問中");
+    L.marker([35.6500, 139.3200], {icon: icons.staff}).addTo(map).bindPopup("Ns.高橋: 休憩");
+    L.marker([35.6550, 139.3350], {icon: icons.patient}).addTo(map).bindPopup("田中様宅");
 }
 
 window.onload = function() { initOmahaSelector(); };
