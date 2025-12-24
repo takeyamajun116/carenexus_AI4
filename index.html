@@ -246,14 +246,20 @@ white-space: nowrap; transition:0.2s; }
 @keyframes scanEffect { 0% { background-color: rgba(37, 99, 235, 0.2); } 100% { background-color: transparent; } }
 @keyframes textFlash { 0% { color: var(--success); transform: scale(1.1); } 100% { color: inherit; transform: scale(1); } }
 
-/* Toast Notification */
+/* Toast Notification (Generic) */
 .toast-notification {
     position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 30px;
+    background: rgba(0,0,0,0.85); color: white; padding: 12px 24px; border-radius: 30px;
     font-size: 14px; font-weight: bold; pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 9999;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px;
 }
 .toast-notification.show { opacity: 1; bottom: 50px; }
+
+/* Patient Badges */
+.patient-badge { font-size:10px; padding:2px 6px; border-radius:4px; color:white; background:#6b7280; margin-left:4px; }
+.badge-inst { background: #059669; }
+.badge-24h { background: #2563eb; }
+.badge-term { background: #9333ea; }
 
 </style>
 </head>
@@ -319,8 +325,8 @@ white-space: nowrap; transition:0.2s; }
     <span style="font-size:10px; opacity:0.8;">(30分加算まで)</span>
 </div>
 
-<div id="copyToast" class="toast-notification">
-    <i class="fa-solid fa-check"></i> クリップボードにコピーしました
+<div id="toast" class="toast-notification">
+    <span id="toastIcon"></span> <span id="toastMsg"></span>
 </div>
 
 <div class="app">
@@ -505,6 +511,8 @@ white-space: nowrap; transition:0.2s; }
                         <option value="2">佐藤 花子 様</option>
                         <option value="3">鈴木 一郎 様</option>
                     </select>
+                    <span id="headerBadges" style="display:flex; align-items:center;"></span>
+
                     <button class="btn btn-sm btn-ghost" onclick="toggleFaceSheet()"><i class="fa-solid fa-id-card"></i> 詳細</button>
                 </div>
                 <button class="btn btn-sm btn-primary" onclick="toggleVisitTimer()" id="visitToggleBtn">訪問開始</button>
@@ -764,11 +772,6 @@ white-space: nowrap; transition:0.2s; }
                     </tbody>
                 </table>
             </div>
-        </div>
-
-        <div class="panel">
-            <div class="panel-title">スタッフ動態管理マップ</div>
-            <div class="map-container" id="adminMap"></div>
         </div>
 
         <div class="panel">
@@ -1191,7 +1194,7 @@ function performCopy() {
     // Fallback copy logic
     if (navigator.clipboard) {
         navigator.clipboard.writeText(textToCopy).then(() => {
-            showToast();
+            showToast('<i class="fa-solid fa-check"></i> クリップボードにコピーしました');
         }).catch(err => {
             console.error('Copy failed, using fallback', err);
             fallbackCopyText(textToCopy);
@@ -1222,15 +1225,17 @@ function fallbackCopyText(text) {
     textArea.select();
     try {
         document.execCommand('copy');
-        showToast();
+        showToast('<i class="fa-solid fa-check"></i> クリップボードにコピーしました');
     } catch (err) {
         console.error('Fallback copy failed', err);
     }
     document.body.removeChild(textArea);
 }
 
-function showToast() {
-    const toast = document.getElementById('copyToast');
+// Updated Toast Function (Generic)
+function showToast(htmlContent) {
+    const toast = document.getElementById('toast');
+    toast.innerHTML = htmlContent;
     toast.classList.add('show');
     setTimeout(() => {
         toast.classList.remove('show');
@@ -1370,7 +1375,15 @@ function renderRecordKbsTable(pid) {
 function switchPatient() {
     const pid = document.getElementById('patientSelector').value; const data = patientDatabase[pid];
     if(data) {
-        // AI Structured Summary
+        // Update Badges
+        const badgeArea = document.getElementById('headerBadges');
+        let badgesHtml = "";
+        if(data.hasDoctorInstruction) badgesHtml += '<span class="patient-badge badge-inst">指示書</span>';
+        if(data.has24hContract) badgesHtml += '<span class="patient-badge badge-24h">24h</span>';
+        if(data.isTerminalCare) badgesHtml += '<span class="patient-badge badge-term">ターミナル</span>';
+        badgeArea.innerHTML = badgesHtml;
+
+        // AI Structured Summary (Keep existing logic)
         const sumContainer = document.getElementById('aiSummaryContainer');
         sumContainer.innerHTML = `<div class="summary-box-structured"></div>`;
         const box = sumContainer.querySelector('.summary-box-structured');
@@ -1407,7 +1420,6 @@ function switchPatient() {
         renderRecordKbsTable(pid);
         document.getElementById('familyReportArea').style.display = 'none';
         
-        // Hide secure copy button when switching
         document.getElementById('copyWrapper').style.display = 'none';
 
         // Populate Patient Config Form
@@ -1416,6 +1428,9 @@ function switchPatient() {
              document.getElementById('cfg_24h').checked = data.has24hContract;
              document.getElementById('cfg_terminal').checked = data.isTerminalCare;
         }
+        
+        // Re-render billing list for current patient
+        initBilling();
     }
 }
 
@@ -1426,6 +1441,9 @@ function updatePatientConfig() {
         patientDatabase[pid].hasDoctorInstruction = document.getElementById('cfg_instruction').checked;
         patientDatabase[pid].has24hContract = document.getElementById('cfg_24h').checked;
         patientDatabase[pid].isTerminalCare = document.getElementById('cfg_terminal').checked;
+        
+        // Reflect changes immediately
+        switchPatient();
     }
 }
 
@@ -1456,6 +1474,9 @@ let visitSeconds = 0;
 function toggleVisitTimer() {
     const btn = document.getElementById('visitToggleBtn');
     const widget = document.getElementById('visitTimerWidget');
+    const pid = document.getElementById('patientSelector').value;
+    const pData = patientDatabase[pid];
+    
     if(!isVisiting) {
         // START
         isVisiting = true;
@@ -1474,6 +1495,16 @@ function toggleVisitTimer() {
                  alert("【加算アラート】\nまもなく30分経過します。算定要件を満たします。");
             }
         }, 1000);
+        
+        // Show Start Toast Notification
+        let notices = [];
+        if(pData.hasDoctorInstruction) notices.push("医師指示書");
+        if(pData.has24hContract) notices.push("24h契約");
+        
+        if(notices.length > 0) {
+            showToast(`<i class="fa-solid fa-circle-info"></i> ${notices.join("・")}あり`);
+        }
+        
     } else {
         // STOP -> Trigger AI Check
         clearInterval(visitTimerInterval);
@@ -1483,8 +1514,6 @@ function toggleVisitTimer() {
 
 // NEW: AI Billing Check Logic
 function showAiCheckModal() {
-    const pid = document.getElementById('patientSelector').value;
-    const pData = patientDatabase[pid];
     const minutes = Math.floor(visitSeconds / 60);
     
     let contentHtml = `<div style="font-size:16px; font-weight:bold; margin-bottom:10px;">滞在時間: ${minutes}分 ${visitSeconds%60}秒</div>`;
@@ -1496,8 +1525,6 @@ function showAiCheckModal() {
     } else {
         contentHtml += `<div class="ai-suggestion-item ai-sug-ok"><i class="fa-solid fa-check"></i> 訪問時間要件をクリアしています。</div>`;
     }
-
-    // Removed static checks (Doctor Instruction, 24h Contract) as requested
 
     contentHtml += `</div>`;
     
