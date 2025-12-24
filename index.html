@@ -6,8 +6,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
 /* ========== Base Design (Unchanged) ========== */
 :root { 
@@ -95,7 +93,6 @@ white-space: nowrap; transition:0.2s; }
 .evt-visit { background: var(--primary); }
 .evt-mtg { background: var(--warning); }
 
-/* Load Grid */
 .load-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
 .load-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; }
 .load-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
@@ -109,12 +106,20 @@ white-space: nowrap; transition:0.2s; }
 .load-bar-container { height: 6px; background: #eee; border-radius: 4px; overflow: hidden; margin-top: 12px; }
 .load-bar-fill { height: 100%; border-radius: 4px; }
 
-/* Urgent Modal */
+/* Urgent Modal & AI Check Modal (Shared) */
 .urgent-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 10000; display: none; align-items: center; justify-content: center; animation: fadeIn 0.3s; }
 .urgent-modal-box { background: #fff; width: 90%; max-width: 400px; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
 .urgent-modal-header { background: #fee2e2; padding: 16px; color: #b91c1c; font-weight: bold; display: flex; align-items: center; gap: 8px; }
 .urgent-modal-body { padding: 20px; font-size: 14px; line-height: 1.6; }
 .urgent-modal-footer { padding: 16px; border-top: 1px solid #eee; text-align: center; background: #fafafa; }
+
+/* AI Check Modal Specific */
+.ai-modal-header { background: #e0e7ff; color: #1e40af; } /* Blue header for AI */
+.ai-suggestion-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.ai-suggestion-item { padding: 10px; border-radius: 6px; font-size: 13px; display: flex; gap: 8px; align-items: flex-start; }
+.ai-sug-ok { background: #dcfce7; color: #166534; }
+.ai-sug-warn { background: #fef9c3; color: #854d0e; }
+.ai-sug-neutral { background: #f3f4f6; color: #4b5563; }
 
 /* Timeline & Treatments */
 .timeline-container { position: relative; padding-left: 20px; border-left: 3px solid #e5e7eb; margin-left: 8px; margin-top: 10px; }
@@ -241,7 +246,7 @@ white-space: nowrap; transition:0.2s; }
 @keyframes scanEffect { 0% { background-color: rgba(37, 99, 235, 0.2); } 100% { background-color: transparent; } }
 @keyframes textFlash { 0% { color: var(--success); transform: scale(1.1); } 100% { color: inherit; transform: scale(1); } }
 
-/* Toast Notification (New) */
+/* Toast Notification */
 .toast-notification {
     position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
     background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 30px;
@@ -250,7 +255,6 @@ white-space: nowrap; transition:0.2s; }
 }
 .toast-notification.show { opacity: 1; bottom: 50px; }
 
-/* Hub Monitor & Map CSS removed */
 </style>
 </head>
 <body>
@@ -288,6 +292,23 @@ white-space: nowrap; transition:0.2s; }
         </div>
         <div class="urgent-modal-footer">
             <button class="btn btn-primary" style="width:100%" onclick="closeUrgentModal()">確認しました</button>
+        </div>
+    </div>
+</div>
+
+<div id="aiCheckModal" class="urgent-modal-overlay">
+    <div class="urgent-modal-box">
+        <div class="urgent-modal-header ai-modal-header">
+            <i class="fa-solid fa-robot fa-lg"></i> 本日の訪問実績とAI提案
+        </div>
+        <div class="urgent-modal-body">
+            <div id="aiCheckContent">
+                </div>
+        </div>
+        <div class="urgent-modal-footer">
+            <button class="btn btn-primary" style="width:100%" onclick="proceedFromAiCheck()">
+                確認して次へ <i class="fa-solid fa-arrow-right"></i>
+            </button>
         </div>
     </div>
 </div>
@@ -496,6 +517,22 @@ white-space: nowrap; transition:0.2s; }
                 <div><b>既往歴:</b> 脳梗塞, 高血圧, 糖尿病<br><b>ADL:</b> 歩行器歩行<br><b>キーパーソン:</b> 長男(090-xxxx)</div>
                 <div><b>処方薬:</b> アムロジピン, メトホルミン<br><b>主治医:</b> 山田医院<br><b>ケアマネ:</b> 鈴木</div>
             </div>
+            
+            <div style="margin-top:16px; padding-top:12px; border-top:1px dashed #ccc;">
+                <h5 style="margin:0 0 8px 0; font-size:13px; color:var(--primary);">算定情報設定</h5>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <label class="treatment-item" style="width:100%; box-sizing:border-box;">
+                        <input type="checkbox" id="cfg_instruction" onchange="updatePatientConfig()"> 医師の指示書あり
+                    </label>
+                    <label class="treatment-item" style="width:100%; box-sizing:border-box;">
+                        <input type="checkbox" id="cfg_24h" onchange="updatePatientConfig()"> 24時間対応体制の契約あり
+                    </label>
+                    <label class="treatment-item" style="width:100%; box-sizing:border-box;">
+                        <input type="checkbox" id="cfg_terminal" onchange="updatePatientConfig()"> ターミナルケア同意書あり
+                    </label>
+                </div>
+            </div>
+
             <button class="btn btn-sm btn-ghost" style="margin-top:10px; width:100%;" onclick="toggleFaceSheet()">閉じる</button>
         </div>
 
@@ -730,6 +767,11 @@ white-space: nowrap; transition:0.2s; }
         </div>
 
         <div class="panel">
+            <div class="panel-title">スタッフ動態管理マップ</div>
+            <div class="map-container" id="adminMap"></div>
+        </div>
+
+        <div class="panel">
             <div class="panel-title">
                 <span>全職員スケジュール (本日 24H)</span>
                 <button class="btn btn-sm btn-outline"><i class="fa-solid fa-pen"></i> 編集</button>
@@ -785,6 +827,16 @@ white-space: nowrap; transition:0.2s; }
                     <div class="load-stat-row"><span>最大連勤</span><span class="load-val">5日</span></div>
                     <div class="load-bar-container"><div class="load-bar-fill" style="width:78%; background:var(--warning);"></div></div>
                 </div>
+            </div>
+        </div>
+
+        <div class="panel" style="background:#1e1e1e; border-color:#333;">
+            <div class="panel-title" style="color:#10b981; border-bottom:1px solid #333;">
+                <i class="fa-solid fa-network-wired"></i> CareNexus Hub Monitor
+            </div>
+            <div class="terminal-window">
+                <div class="log-line"><span class="log-time">10:22:01</span><span class="log-type">[INFO]</span><span class="log-msg">Orchestrator: Polling external EMR (Vendor:Fujitsu)...</span></div>
+                <div class="log-line"><span class="log-time">10:22:05</span><span class="log-type">[SUCCESS]</span><span class="log-msg">Data fetch complete. 3 new patient records found.</span></div>
             </div>
         </div>
     </section>
@@ -856,25 +908,26 @@ const staffDatabase = [
     }
 ];
 
-// Mock Database
+// Mock Database (UPDATED with Billing Configs)
 const patientDatabase = {
     1: { 
         name: "田中 太郎",
         omahaTag: "Physiological/Skin", 
-        // Updated Structured Summary Data
+        hasDoctorInstruction: true, // New
+        has24hContract: true,       // New
+        isTerminalCare: false,      // New
         structuredSummary: [
             { type: "alert", label: "最大リスク", text: "心不全増悪リスクあり (直近3日体重＋2kg)" },
             { type: "ng", label: "禁止事項", text: "左上肢で血圧測定禁止 (シャントあり)" },
             { type: "todo", label: "重点ケア", text: "下肢浮腫の観察を重点的に / 褥瘡部位の写真記録必須" },
             { type: "change", label: "直近変化", text: "SpO₂: 96% → 93% (労作時低下あり)" },
             { type: "family", label: "家族・本人", text: "本人は症状を過小申告しがち。奥様に確認すること。" },
-            // Priority 2
             { type: "info", label: "病態フェーズ", text: "慢性心不全・増悪予備軍" },
             { type: "info", label: "最新指示", text: "利尿剤増量検討中 (12/18 Dr.山田指示)" },
             { type: "info", label: "服薬・機器", text: "利尿剤の飲み忘れ注意" },
             { type: "info", label: "生活背景", text: "日中独居 / 室内犬あり" }
         ],
-        summary: "心不全増悪リスクあり。体重増加傾向。左上肢血圧測定禁止。下肢浮腫観察が必要。", // For Text-to-Speech
+        summary: "心不全増悪リスクあり。体重増加傾向。左上肢血圧測定禁止。下肢浮腫観察が必要。", 
         history: [
             { date: "12/19 09:30", staff: "Ns.山田", content: "定期訪問。バイタル安定。浮腫軽度。" },
             { date: "12/17 09:30", staff: "Ns.高橋", content: "定期訪問。体重+1kg。SpO2 94%。Dr報告済。" },
@@ -912,6 +965,9 @@ const patientDatabase = {
     2: { 
         name: "佐藤 花子",
         omahaTag: "Physiological/Neuro-Digest", 
+        hasDoctorInstruction: false,
+        has24hContract: true,
+        isTerminalCare: false,
         structuredSummary: [
              { type: "alert", label: "最大リスク", text: "転倒リスク高 (先週転倒歴あり)" },
              { type: "ng", label: "禁止事項", text: "単独での歩行移動禁止" }
@@ -927,6 +983,9 @@ const patientDatabase = {
     3: { 
         name: "鈴木 一郎",
         omahaTag: "Physiological/Neuro-Mobility", 
+        hasDoctorInstruction: false,
+        has24hContract: false,
+        isTerminalCare: false,
         structuredSummary: [
              { type: "alert", label: "最大リスク", text: "誤嚥リスク高 (むせ込み増加)" },
              { type: "todo", label: "重点ケア", text: "食事形態の確認・嚥下体操" }
@@ -978,6 +1037,7 @@ function setTab(id) {
     if(id === 'calendar') renderCalendar();
     if(id === 'record') { if(!myChart) setTimeout(initChart, 100); switchPatient(); renderTreatmentList(); }
     if(id === 'admin') { 
+        setTimeout(renderMap, 100); 
         loadAdminMemo(); 
         renderBillingAdmin(); 
         renderHRCards(); 
@@ -1212,7 +1272,7 @@ function speakSummary() {
     const u = new SpeechSynthesisUtterance(txt); u.lang = "ja-JP"; speechSynthesis.speak(u); 
 }
 
-// Updated Billing Logic
+// Billing with Description Toggle
 function initBilling() { 
     const list = document.getElementById('billingSuggestionList'); list.innerHTML = ""; 
     const pid = document.getElementById('patientSelector').value;
@@ -1305,33 +1365,6 @@ function loadPrevKBS() {
     if(prob.includes("栄養") || prob.includes("服薬")) { baseK=4; baseB=4; baseS=4; }
     document.getElementById('input_k').value = baseK; document.getElementById('input_b').value = baseB; document.getElementById('input_s').value = baseS;
 }
-function saveRecord() {
-    if(confirm("【実務ナッジ】\nこの訪問で有料駐車場は利用しましたか？\n\nOK=はい、利用した\nキャンセル=いいえ")) {
-        const fee = prompt("駐車料金を入力してください(円)", "400");
-        if(fee) alert(`${fee}円を立替経費に保存しました。`);
-    } else {
-        document.getElementById('parkingNudge').style.display = "flex"; 
-    }
-
-    const pid = document.getElementById('patientSelector').value;
-    const memo = document.getElementById('aiInputMemo').value;
-    const newK = parseInt(document.getElementById('input_k').value); const newB = parseInt(document.getElementById('input_b').value); const newS = parseInt(document.getElementById('input_s').value);
-    
-    patientDatabase[pid].omahaScores.k.push(newK); patientDatabase[pid].omahaScores.k.shift();
-    patientDatabase[pid].omahaScores.b.push(newB); patientDatabase[pid].omahaScores.b.shift();
-    patientDatabase[pid].omahaScores.s.push(newS); patientDatabase[pid].omahaScores.s.shift();
-    const date = new Date().toLocaleString('ja-JP', {month:'numeric', day:'numeric', hour:'numeric', minute:'numeric'});
-    patientDatabase[pid].history.unshift({ date: date, staff: "Ns.山田", content: memo || "定期記録" });
-    
-    switchPatient();
-    alert("保存完了しました。");
-    document.getElementById('aiInputMemo').value = "";
-    
-    isVisiting = false; clearInterval(visitTimerInterval);
-    document.getElementById('visitTimerWidget').style.display = "none";
-    document.getElementById('visitToggleBtn').innerText = "訪問開始";
-}
-
 function renderRecordKbsTable(pid) {
     const data = patientDatabase[pid]; const tbody = document.getElementById('recordKbsBody'); if(!tbody) return; tbody.innerHTML = "";
     const history = data.history; const scores = data.omahaScores;
@@ -1347,7 +1380,7 @@ function renderRecordKbsTable(pid) {
 function switchPatient() {
     const pid = document.getElementById('patientSelector').value; const data = patientDatabase[pid];
     if(data) {
-        // AI Structured Summary
+        // AI Structured Summary (Keep existing logic)
         const sumContainer = document.getElementById('aiSummaryContainer');
         sumContainer.innerHTML = `<div class="summary-box-structured"></div>`;
         const box = sumContainer.querySelector('.summary-box-structured');
@@ -1359,7 +1392,7 @@ function switchPatient() {
                 else if(item.type === 'todo') cssClass = "sb-todo";
                 else if(item.type === 'change') cssClass = "sb-change";
                 else if(item.type === 'family') cssClass = "sb-family";
-                else cssClass = "sb-row"; // normal
+                else cssClass = "sb-row"; 
 
                 let icon = "";
                 if(item.type==='alert') icon='<i class="fa-solid fa-triangle-exclamation"></i> ';
@@ -1384,8 +1417,24 @@ function switchPatient() {
         renderRecordKbsTable(pid);
         document.getElementById('familyReportArea').style.display = 'none';
         
-        // Hide secure copy button when switching
         document.getElementById('copyWrapper').style.display = 'none';
+
+        // NEW: Populate Patient Config Form
+        if(data.hasDoctorInstruction !== undefined) {
+             document.getElementById('cfg_instruction').checked = data.hasDoctorInstruction;
+             document.getElementById('cfg_24h').checked = data.has24hContract;
+             document.getElementById('cfg_terminal').checked = data.isTerminalCare;
+        }
+    }
+}
+
+// NEW: Update Patient Config in Database
+function updatePatientConfig() {
+    const pid = document.getElementById('patientSelector').value;
+    if(patientDatabase[pid]) {
+        patientDatabase[pid].hasDoctorInstruction = document.getElementById('cfg_instruction').checked;
+        patientDatabase[pid].has24hContract = document.getElementById('cfg_24h').checked;
+        patientDatabase[pid].isTerminalCare = document.getElementById('cfg_terminal').checked;
     }
 }
 
@@ -1408,14 +1457,16 @@ function resolveParking() {
     if(fee) { document.getElementById('parkingNudge').style.display = 'none'; alert("精算済みとマークしました"); }
 }
 
-// Feature B-2: Visit Timer
+// Feature B-2: Visit Timer & NEW AI Check Flow
 let isVisiting = false;
 let visitTimerInterval;
 let visitSeconds = 0;
+
 function toggleVisitTimer() {
     const btn = document.getElementById('visitToggleBtn');
     const widget = document.getElementById('visitTimerWidget');
     if(!isVisiting) {
+        // START
         isVisiting = true;
         btn.innerText = "訪問終了";
         btn.classList.remove('btn-primary'); btn.classList.add('btn-danger');
@@ -1433,8 +1484,49 @@ function toggleVisitTimer() {
             }
         }, 1000);
     } else {
-        saveRecord(); 
+        // STOP -> Trigger AI Check
+        clearInterval(visitTimerInterval);
+        showAiCheckModal();
     }
+}
+
+// NEW: AI Billing Check Logic
+function showAiCheckModal() {
+    const pid = document.getElementById('patientSelector').value;
+    const pData = patientDatabase[pid];
+    const minutes = Math.floor(visitSeconds / 60);
+    
+    let contentHtml = `<div style="font-size:16px; font-weight:bold; margin-bottom:10px;">滞在時間: ${minutes}分 ${visitSeconds%60}秒</div>`;
+    contentHtml += `<div class="ai-suggestion-list">`;
+
+    // 1. Time Check
+    if(minutes < 20) {
+        contentHtml += `<div class="ai-suggestion-item ai-sug-warn"><i class="fa-solid fa-triangle-exclamation"></i> ⚠️ 20分未満のため、算定要件を満たさない可能性があります。</div>`;
+    } else {
+        contentHtml += `<div class="ai-suggestion-item ai-sug-ok"><i class="fa-solid fa-check"></i> 訪問時間要件をクリアしています。</div>`;
+    }
+
+    // 2. Doctor Instruction Check
+    if(pData.hasDoctorInstruction) {
+        contentHtml += `<div class="ai-suggestion-item ai-sug-ok"><i class="fa-solid fa-user-doctor"></i> ✅ 医師の指示書あり：特別管理加算の対象となる可能性があります。</div>`;
+    } else {
+        contentHtml += `<div class="ai-suggestion-item ai-sug-neutral"><i class="fa-solid fa-info-circle"></i> 医師の指示書登録なし</div>`;
+    }
+
+    // 3. 24h Check
+    if(pData.has24hContract) {
+        contentHtml += `<div class="ai-suggestion-item ai-sug-ok"><i class="fa-solid fa-phone"></i> ✅ 24時間契約あり：緊急時加算の対象です。</div>`;
+    }
+
+    contentHtml += `</div>`;
+    
+    document.getElementById('aiCheckContent').innerHTML = contentHtml;
+    document.getElementById('aiCheckModal').style.display = 'flex';
+}
+
+function proceedFromAiCheck() {
+    document.getElementById('aiCheckModal').style.display = 'none';
+    saveRecord(); // Proceed to original save flow (Parking Nudge -> Save)
 }
 
 // Feature E-1: Admin Memo
