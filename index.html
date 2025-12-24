@@ -829,16 +829,6 @@ white-space: nowrap; transition:0.2s; }
                 </div>
             </div>
         </div>
-
-        <div class="panel" style="background:#1e1e1e; border-color:#333;">
-            <div class="panel-title" style="color:#10b981; border-bottom:1px solid #333;">
-                <i class="fa-solid fa-network-wired"></i> CareNexus Hub Monitor
-            </div>
-            <div class="terminal-window">
-                <div class="log-line"><span class="log-time">10:22:01</span><span class="log-type">[INFO]</span><span class="log-msg">Orchestrator: Polling external EMR (Vendor:Fujitsu)...</span></div>
-                <div class="log-line"><span class="log-time">10:22:05</span><span class="log-type">[SUCCESS]</span><span class="log-msg">Data fetch complete. 3 new patient records found.</span></div>
-            </div>
-        </div>
     </section>
 </div>
 
@@ -1380,7 +1370,7 @@ function renderRecordKbsTable(pid) {
 function switchPatient() {
     const pid = document.getElementById('patientSelector').value; const data = patientDatabase[pid];
     if(data) {
-        // AI Structured Summary (Keep existing logic)
+        // AI Structured Summary
         const sumContainer = document.getElementById('aiSummaryContainer');
         sumContainer.innerHTML = `<div class="summary-box-structured"></div>`;
         const box = sumContainer.querySelector('.summary-box-structured');
@@ -1417,9 +1407,10 @@ function switchPatient() {
         renderRecordKbsTable(pid);
         document.getElementById('familyReportArea').style.display = 'none';
         
+        // Hide secure copy button when switching
         document.getElementById('copyWrapper').style.display = 'none';
 
-        // NEW: Populate Patient Config Form
+        // Populate Patient Config Form
         if(data.hasDoctorInstruction !== undefined) {
              document.getElementById('cfg_instruction').checked = data.hasDoctorInstruction;
              document.getElementById('cfg_24h').checked = data.has24hContract;
@@ -1499,24 +1490,14 @@ function showAiCheckModal() {
     let contentHtml = `<div style="font-size:16px; font-weight:bold; margin-bottom:10px;">滞在時間: ${minutes}分 ${visitSeconds%60}秒</div>`;
     contentHtml += `<div class="ai-suggestion-list">`;
 
-    // 1. Time Check
+    // 1. Time Check (Only warning shown)
     if(minutes < 20) {
         contentHtml += `<div class="ai-suggestion-item ai-sug-warn"><i class="fa-solid fa-triangle-exclamation"></i> ⚠️ 20分未満のため、算定要件を満たさない可能性があります。</div>`;
     } else {
         contentHtml += `<div class="ai-suggestion-item ai-sug-ok"><i class="fa-solid fa-check"></i> 訪問時間要件をクリアしています。</div>`;
     }
 
-    // 2. Doctor Instruction Check
-    if(pData.hasDoctorInstruction) {
-        contentHtml += `<div class="ai-suggestion-item ai-sug-ok"><i class="fa-solid fa-user-doctor"></i> ✅ 医師の指示書あり：特別管理加算の対象となる可能性があります。</div>`;
-    } else {
-        contentHtml += `<div class="ai-suggestion-item ai-sug-neutral"><i class="fa-solid fa-info-circle"></i> 医師の指示書登録なし</div>`;
-    }
-
-    // 3. 24h Check
-    if(pData.has24hContract) {
-        contentHtml += `<div class="ai-suggestion-item ai-sug-ok"><i class="fa-solid fa-phone"></i> ✅ 24時間契約あり：緊急時加算の対象です。</div>`;
-    }
+    // Removed static checks (Doctor Instruction, 24h Contract) as requested
 
     contentHtml += `</div>`;
     
@@ -1524,9 +1505,53 @@ function showAiCheckModal() {
     document.getElementById('aiCheckModal').style.display = 'flex';
 }
 
+// NEW: Proceed flow
 function proceedFromAiCheck() {
     document.getElementById('aiCheckModal').style.display = 'none';
-    saveRecord(); // Proceed to original save flow (Parking Nudge -> Save)
+    
+    // Slight delay for UX before parking check
+    setTimeout(() => {
+        askParkingInfo();
+    }, 300);
+}
+
+function askParkingInfo() {
+    // Standard confirm for demo
+    if(confirm("【駐車場確認】\n今回、有料駐車場を利用しましたか？")) {
+        const fee = prompt("駐車料金を入力してください（円）", "400");
+        if(fee) {
+            alert(`${fee}円を立替経費として記録しました。`);
+        }
+    }
+    finishVisitAndSave();
+}
+
+function finishVisitAndSave() {
+    // Logic from original saveRecord (minus parking check)
+    const pid = document.getElementById('patientSelector').value;
+    const memo = document.getElementById('aiInputMemo').value;
+    const newK = parseInt(document.getElementById('input_k').value); const newB = parseInt(document.getElementById('input_b').value); const newS = parseInt(document.getElementById('input_s').value);
+    
+    patientDatabase[pid].omahaScores.k.push(newK); patientDatabase[pid].omahaScores.k.shift();
+    patientDatabase[pid].omahaScores.b.push(newB); patientDatabase[pid].omahaScores.b.shift();
+    patientDatabase[pid].omahaScores.s.push(newS); patientDatabase[pid].omahaScores.s.shift();
+    const date = new Date().toLocaleString('ja-JP', {month:'numeric', day:'numeric', hour:'numeric', minute:'numeric'});
+    patientDatabase[pid].history.unshift({ date: date, staff: "Ns.山田", content: memo || "定期記録" });
+    
+    switchPatient();
+    alert("訪問記録を完了し、保存しました。");
+    document.getElementById('aiInputMemo').value = "";
+    
+    isVisiting = false; // Already cleared interval in toggle
+    document.getElementById('visitTimerWidget').style.display = "none";
+    document.getElementById('visitToggleBtn').innerText = "訪問開始";
+    document.getElementById('visitToggleBtn').classList.remove('btn-danger');
+    document.getElementById('visitToggleBtn').classList.add('btn-primary');
+}
+
+// Manual Save (without AI check flow)
+function saveRecord() {
+    askParkingInfo(); // Direct to parking check -> save
 }
 
 // Feature E-1: Admin Memo
